@@ -1,0 +1,32 @@
+{
+  "runId": "run-2026-05-20T18-13-24-489Z",
+  "stage": "failed",
+  "error": "Verification failed",
+  "events": [
+    {
+      "at": "2026-05-20T18:13:24.490Z",
+      "stage": "clarifying",
+      "message": "Build requirement card"
+    },
+    {
+      "at": "2026-05-20T18:13:24.501Z",
+      "stage": "planning",
+      "message": "Locate Skill and target files"
+    },
+    {
+      "at": "2026-05-20T18:13:24.501Z",
+      "stage": "editing",
+      "message": "Apply patch to Conduit sandbox"
+    },
+    {
+      "at": "2026-05-20T18:13:24.512Z",
+      "stage": "verifying",
+      "message": "Run Conduit verification"
+    },
+    {
+      "at": "2026-05-20T18:13:26.066Z",
+      "stage": "failed",
+      "message": "Verification failed"
+    }
+  ]
+}

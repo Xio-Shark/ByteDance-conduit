@@ -1,0 +1,267 @@
+# 验收标准：Conduit 超级个体端到端交付系统 v1.0.0
+# §2.2 评判亮点六项全部必达（F-007–F010 为 P0，非可选加分）
+# 冲刺任务映射：docs/06-plan.md#冲刺关键路径（H1–S10）
+
+requirements:
+  - requirement_id: "F-001"
+    title: "PM 需求输入与澄清"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F001-01"
+        description: "前端对话页可以输入自然语言需求并创建 DeliveryRun"
+        test_type: "e2e"
+        stage: "clarify"
+      - id: "AC-F001-02"
+        description: "澄清 Agent 输出问题、假设和可确认需求卡片"
+        test_type: "integration"
+        stage: "clarify"
+      - id: "AC-F001-03"
+        description: "§2.2 澄清深度：模糊/冲突/缺边界输入须真实 LLM 主动追问，requirement.md 含 clarifications 且禁止未澄清写码"
+        test_type: "e2e"
+        stage: "clarify"
+
+  - requirement_id: "F-002"
+    title: "方案拆解与模块定位"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F002-01"
+        description: "系统能读取 Conduit 文件树并输出真实目标文件路径"
+        test_type: "integration"
+        stage: "plan"
+      - id: "AC-F002-02"
+        description: "方案页展示 Skill、影响范围、风险和验证命令"
+        test_type: "e2e"
+        stage: "plan"
+
+  - requirement_id: "F-003"
+    title: "Skill / Agent / Orchestrator 分层"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F003-01"
+        description: "至少存在 2 个可注册 Skill（L1 + 扩展/L2）"
+        test_type: "unit"
+        stage: "plan"
+      - id: "AC-F003-02"
+        description: "Orchestrator 按 clarify → plan → edit → verify → pr 顺序推进"
+        test_type: "integration"
+        stage: "orchestrate"
+      - id: "AC-F003-03"
+        description: "§2.2 抽象到位：接入第 3 需求模式仅新增 1 个 Skill 文件，不改 Orchestrator/Agent 主干"
+        test_type: "manual-review"
+        stage: "plan"
+
+  - requirement_id: "F-004"
+    title: "真实 Conduit 仓库写入"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F004-01"
+        description: "sandbox-repo 基于 Conduit fork 或裁剪子集"
+        test_type: "manual-review"
+        stage: "edit"
+      - id: "AC-F004-02"
+        description: "系统对真实文件产生 git diff"
+        test_type: "integration"
+        stage: "edit"
+
+  - requirement_id: "F-005"
+    title: "自动化验证闭环"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F005-01"
+        description: "系统运行 Conduit 仓库真实 lint 命令并记录退出码"
+        test_type: "integration"
+        stage: "verify"
+      - id: "AC-F005-02"
+        description: "系统运行相关单测或显式记录测试缺口"
+        test_type: "integration"
+        stage: "verify"
+
+  - requirement_id: "F-006"
+    title: "PR 提交准备"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F006-01"
+        description: "系统生成 PR 标题、描述、变更文件、验证结果和风险"
+        test_type: "e2e"
+        stage: "pr"
+      - id: "AC-F006-02"
+        description: "具备 GitHub 权限时可创建真实 PR；无权限时生成可复制 PR 草稿"
+        test_type: "manual-review"
+        stage: "pr"
+
+  - requirement_id: "F-007"
+    title: "断点重放（§2.2 #2）"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F007-01"
+        description: "任一阶段可暂停；resume-from-stage（或等价 API）从指定阶段只重放下游，事件持久化"
+        test_type: "integration"
+        stage: "orchestrate"
+      - id: "AC-F007-02"
+        description: "演示：plan 后修改输入，仅重跑 edit → verify → pr，上游产物保留"
+        test_type: "e2e"
+        stage: "orchestrate"
+
+  - requirement_id: "F-008"
+    title: "跨栈一致性（§2.2 #3）"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F008-01"
+        description: "至少 1 条 L2 跨栈 run：plan 含前端/后端/数据模型/测试影响矩阵"
+        test_type: "manual-review"
+        stage: "plan"
+      - id: "AC-F008-02"
+        description: "L2 diff.patch 覆盖 backend 与 frontend 真实路径并通过验证或显式缺口"
+        test_type: "integration"
+        stage: "edit"
+
+  - requirement_id: "F-009"
+    title: "可观测性（§2.2 #4）"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F009-01"
+        description: "每次 LLM 调用 ai-calls.jsonl 记录模型、tokens、延迟、成本、阶段、状态"
+        test_type: "integration"
+        stage: "observe"
+      - id: "AC-F009-02"
+        description: "Web 控制台 AI Usage/成本汇总监控面板可展示调用明细与汇总"
+        test_type: "e2e"
+        stage: "observe"
+
+  - requirement_id: "F-010"
+    title: "业务上下文反哺（§2.2 #5）"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F010-01"
+        description: "相似需求 history-recall.json 命中历史 requirement/plan/Skill"
+        test_type: "integration"
+        stage: "learn"
+      - id: "AC-F010-02"
+        description: "第二条相似 run 的 plan 引用召回条目（非仅 UI 展示）"
+        test_type: "e2e"
+        stage: "plan"
+
+  - requirement_id: "F-011"
+    title: "提交材料完整度"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F011-01"
+        description: "提交材料清单覆盖 Demo、视频、公开仓库、README、架构图、AI 使用说明和工程难点说明"
+        test_type: "manual-review"
+        stage: "submit"
+      - id: "AC-F011-02"
+        description: "演示视频 3-8 分钟，覆盖 §2.1 MVP 与 §2.2 六项亮点"
+        test_type: "manual-review"
+        stage: "submit"
+      - id: "AC-F011-03"
+        description: "公开仓库为 AI 系统主仓，且内含 sandbox-repo/ Conduit fork 子仓（§8.2）"
+        test_type: "manual-review"
+        stage: "submit"
+
+  - requirement_id: "F-012"
+    title: "AI 使用合规与过程留痕"
+    priority: "P0"
+    acceptance:
+      - id: "AC-F012-01"
+        description: "AI 调用记录包含阶段、模型、tokens、延迟、成本和结果状态"
+        test_type: "integration"
+        stage: "observe"
+      - id: "AC-F012-02"
+        description: "README 或 AI 使用说明声明模型用途、Prompt / Skill 迭代和人工审阅机制，且不包含真实 API key"
+        test_type: "manual-review"
+        stage: "submit"
+      - id: "AC-F012-03"
+        description: "课题完成须含真实 LLM 调用留痕（rules 胶水路径不替代 §2.2 澄清深度与可观测性）"
+        test_type: "manual-review"
+        stage: "submit"
+
+# 验收勾选（H15）；updated_at: 2026-05-21
+# status: verified | partial | manual_pending
+verification:
+  updated_at: "2026-05-21"
+  verify_command: "bytedance-implementation: npm run verify (53 tests)"
+  items:
+    - id: AC-F001-01
+      status: verified
+      evidence: "apps/api/src/app.test.js; run-2026-05-21T02-16-15-215Z"
+    - id: AC-F001-02
+      status: verified
+      evidence: "clarifyWithLlm.test.js; requirementAgent rules path"
+    - id: AC-F001-03
+      status: verified
+      evidence: "run-2026-05-21T05-58-01-181Z (mimo-v2.5, clarifications[])"
+    - id: AC-F002-01
+      status: verified
+      evidence: "planningAgent + sandbox.assertFiles"
+    - id: AC-F002-02
+      status: verified
+      evidence: "Web RunResult plan section; L2 impact_matrix in plan.md"
+    - id: AC-F003-01
+      status: verified
+      evidence: "3 Skills in registry.js"
+    - id: AC-F003-02
+      status: verified
+      evidence: "deliveryPipeline.test.js"
+    - id: AC-F003-03
+      status: verified
+      evidence: "run-2026-05-21T05-52-18-277Z; articleDetailWordCount.js only"
+    - id: AC-F004-01
+      status: verified
+      evidence: "sandbox-repo/ Conduit fork"
+    - id: AC-F004-02
+      status: verified
+      evidence: "run-2026-05-21T02-16-15-215Z/diff.patch"
+    - id: AC-F005-01
+      status: verified
+      evidence: "verificationAgent.test.js; lint:sandbox adapter"
+    - id: AC-F005-02
+      status: verified
+      evidence: "sandbox Vitest 12 tests; verification.json"
+    - id: AC-F006-01
+      status: verified
+      evidence: "prAgent.test.js; pr-draft.md"
+    - id: AC-F006-02
+      status: partial
+      evidence: "githubPrClient.test.js; local pr-draft only (H17 deferred)"
+    - id: AC-F007-01
+      status: verified
+      evidence: "deliveryPipeline.test.js; resumeWorkflow.js"
+    - id: AC-F007-02
+      status: verified
+      evidence: "app.test.js resume-from-stage; checkpoints.json"
+    - id: AC-F008-01
+      status: verified
+      evidence: "run-2026-05-21T05-52-12-490Z/plan.md impact_matrix"
+    - id: AC-F008-02
+      status: verified
+      evidence: "articleDraftIndicator.test.js; L2 diff.patch"
+    - id: AC-F009-01
+      status: verified
+      evidence: "run-2026-05-21T05-58-01-181Z/ai-calls.jsonl"
+    - id: AC-F009-02
+      status: verified
+      evidence: "AiUsagePanel.jsx non-zero badge; aiUsage.test.js"
+    - id: AC-F010-01
+      status: verified
+      evidence: "historyRecall.test.js"
+    - id: AC-F010-02
+      status: verified
+      evidence: "run-2026-05-21T05-51-56-519Z/plan.md history_references"
+    - id: AC-F011-01
+      status: partial
+      evidence: "submission/* drafts; team/demo links manual (S6)"
+    - id: AC-F011-02
+      status: manual_pending
+      evidence: "S7 演示视频待录制"
+    - id: AC-F011-03
+      status: manual_pending
+      evidence: "S8 公开双仓待人工发布"
+    - id: AC-F012-01
+      status: verified
+      evidence: "ai-calls.jsonl schema; aiUsage.test.js"
+    - id: AC-F012-02
+      status: verified
+      evidence: "ai-usage.md model table + compliance; no keys in repo"
+    - id: AC-F012-03
+      status: verified
+      evidence: "run-2026-05-21T05-58-01-181Z LLM clarify"
