@@ -1,0 +1,273 @@
+# 需求追踪矩阵：Conduit 超级个体端到端交付系统 v1.0.0
+# 冲刺任务 SSOT：docs/06-plan.md#冲刺关键路径（plan_refs 字段）
+
+traceability:
+  - requirement_id: "F-001"
+    acceptance_ids:
+      - "AC-F001-01"
+      - "AC-F001-02"
+      - "AC-F001-03"
+    design_refs:
+      - "docs/01-understanding.md#p0-成功标准"
+      - "docs/04-design.md#页面-1需求对话页"
+      - "docs/03-spec.md#需求卡片规格"
+    plan_refs:
+      - "docs/06-plan.md#冲刺关键路径:H3"
+      - "docs/06-plan.md#冲刺关键路径:H4"
+    implementation_refs:
+      - "apps/web/src/main.jsx"
+      - "apps/web/src/api.js"
+      - "services/agents/src/requirementAgent.js"
+      - "services/agents/src/clarifyWithLlm.js"
+      - "services/orchestrator/src/llmClient.js"
+    test_refs:
+      - "services/agents/src/clarifyWithLlm.test.js"
+      - "services/orchestrator/src/aiArtifacts.test.js"
+      - "apps/api/src/app.test.js"
+    pr_refs: []
+    status: "llm_verified"
+    status_note: "rules 与 llm 均已验收；§2.2 #6（AC-F001-03）证据 run-2026-05-21T05-58-01-181Z（模糊输入 + clarifications[]）；清晰 L1 legacy doubao run 不计入"
+    evidence_runs:
+      - "run-2026-05-21T02-16-15-215Z"
+      - "run-2026-05-21T05-58-01-181Z"
+
+  - requirement_id: "F-002"
+    acceptance_ids:
+      - "AC-F002-01"
+      - "AC-F002-02"
+    design_refs:
+      - "docs/04-design.md#页面-2方案与模块定位页"
+      - "docs/03-spec.md#agent-规格"
+    implementation_refs:
+      - "services/sandbox/**"
+      - "services/agents/src/planningAgent.js"
+    test_refs:
+      - "services/skills/src/articleListDisplayField.test.js"
+    pr_refs: []
+    status: "rules_verified"
+    status_note: "rules 模式下 Planning Agent 为硬编码模板（summary/impacted_modules/risks 固定）；sandbox.assertFiles 已验证目标文件存在；§2.2 跨栈影响矩阵（AC-F002-02 L2 扩展）未闭合"
+
+  - requirement_id: "F-003"
+    acceptance_ids:
+      - "AC-F003-01"
+      - "AC-F003-02"
+      - "AC-F003-03"
+    design_refs:
+      - "docs/05-dev.md#skill-注册机制"
+      - "docs/05-dev.md#orchestrator-状态机"
+      - "docs/03-spec.md#skill-规格"
+      - "docs/03-spec.md#状态机规格"
+    plan_refs:
+      - "docs/06-plan.md#冲刺关键路径:H10"
+      - "docs/06-plan.md#冲刺关键路径:H12"
+    implementation_refs:
+      - "services/orchestrator/src/deliveryPipeline.js"
+      - "services/skills/src/registry.js"
+      - "services/skills/src/articleListDisplayField.js"
+      - "services/skills/src/articleDraftIndicator.js"
+      - "services/skills/src/articleDetailWordCount.js"
+    test_refs:
+      - "services/skills/src/articleListDisplayField.test.js"
+      - "apps/api/src/app.test.js"
+    pr_refs: []
+    status: "rules_verified"
+    status_note: "3 个 Skill 已注册；第 3 模式仅新增 Skill 文件，未改 Orchestrator/Agent 主干（H12）"
+
+  - requirement_id: "F-004"
+    acceptance_ids:
+      - "AC-F004-01"
+      - "AC-F004-02"
+    design_refs:
+      - "docs/03-spec.md#验证规格"
+      - "docs/04-design.md#页面-4diff-与验证结果页"
+    implementation_refs:
+      - "services/sandbox/**"
+      - "sandbox-repo/**"
+    test_refs:
+      - "services/skills/src/articleListDisplayField.test.js"
+    pr_refs: []
+    status: "rules_verified"
+
+  - requirement_id: "F-005"
+    acceptance_ids:
+      - "AC-F005-01"
+      - "AC-F005-02"
+    design_refs:
+      - "docs/03-spec.md#验证规格"
+      - "docs/04-design.md#页面-4diff-与验证结果页"
+    implementation_refs:
+      - "services/agents/src/verificationAgent.js"
+      - "docs/reports/runs/<run-id>/verification.json"
+    test_refs:
+      - "services/agents/src/verificationAgent.test.js"
+    pr_refs: []
+    status: "rules_verified"
+
+  - requirement_id: "F-006"
+    acceptance_ids:
+      - "AC-F006-01"
+      - "AC-F006-02"
+    design_refs:
+      - "docs/04-design.md#页面-5pr-草稿页"
+      - "docs/03-spec.md#p0-验收门槛"
+    implementation_refs:
+      - "services/agents/src/prAgent.js"
+      - "external/git-provider/src/githubPrClient.js"
+    test_refs:
+      - "services/agents/src/prAgent.test.js"
+      - "external/git-provider/src/githubPrClient.test.js"
+    pr_refs:
+      - "docs/reports/runs/<run-id>/pr-draft.md"
+    status: "draft_pr_ready"
+
+  - requirement_id: "F-007"
+    acceptance_ids:
+      - "AC-F007-01"
+      - "AC-F007-02"
+    design_refs:
+      - "docs/01-understanding.md#22-评判亮点全部必达"
+      - "docs/03-spec.md#22-评判亮点规格"
+      - "docs/04-design.md#页面-3执行监控页"
+    plan_refs:
+      - "docs/06-plan.md#冲刺关键路径:H5"
+      - "docs/06-plan.md#冲刺关键路径:H6"
+      - "docs/06-plan.md#冲刺关键路径:H7"
+    implementation_refs:
+      - "services/orchestrator/src/deliveryPipeline.js"
+      - "apps/api/src/resumeWorkflow.js"
+      - "apps/api/src/runWorkflow.js"
+      - "apps/api/src/runStore.js"
+      - "apps/web/src/api.js"
+      - "apps/web/src/components/RunResult.jsx"
+      - "docs/reports/runs/<run-id>/**"
+    test_refs:
+      - "services/orchestrator/src/deliveryPipeline.test.js"
+      - "apps/api/src/app.test.js"
+      - "apps/api/src/appReview.test.js"
+    pr_refs: []
+    status: "rules_verified"
+    status_note: "POST /api/runs/:id/resume-from-stage + checkpoints；Web 可从 editing 重放；待录制 H7 演示证据"
+
+  - requirement_id: "F-008"
+    acceptance_ids:
+      - "AC-F008-01"
+      - "AC-F008-02"
+    design_refs:
+      - "docs/01-understanding.md#22-评判亮点全部必达"
+      - "docs/02-prd.md#f-008-跨栈一致性22-3"
+      - "docs/06-plan.md#l2--l3-必达演示题22"
+    plan_refs:
+      - "docs/06-plan.md#冲刺关键路径:H10"
+      - "docs/06-plan.md#冲刺关键路径:H11"
+    implementation_refs:
+      - "services/agents/src/planningAgent.js"
+      - "services/skills/**"
+      - "sandbox-repo/**"
+    test_refs:
+      - "services/agents/src/planningAgent.test.js"
+      - "services/skills/src/articleDraftIndicator.test.js"
+    pr_refs:
+      - "docs/reports/runs/run-2026-05-21T05-52-12-490Z/plan.md"
+      - "docs/reports/runs/run-2026-05-21T05-52-12-490Z/diff.patch"
+    status: "rules_verified"
+    status_note: "L2 run run-2026-05-21T05-52-12-490Z：plan.impact_matrix.cross_stack=true；diff 含 backend + frontend；集成测试已补"
+
+  - requirement_id: "F-009"
+    acceptance_ids:
+      - "AC-F009-01"
+      - "AC-F009-02"
+    design_refs:
+      - "docs/04-design.md#页面-6提交材料与-ai-留痕页"
+      - "docs/05-dev.md#ai-使用留痕"
+      - "docs/03-spec.md#证据规格"
+    plan_refs:
+      - "docs/06-plan.md#冲刺关键路径:H4"
+      - "docs/06-plan.md#冲刺关键路径:H13"
+    implementation_refs:
+      - "docs/reports/runs/<run-id>/ai-calls.jsonl"
+      - "services/orchestrator/src/aiUsage.js"
+      - "apps/web/src/components/RunResult.jsx"
+    test_refs:
+      - "services/orchestrator/src/aiUsage.test.js"
+    pr_refs: []
+    status: "llm_verified"
+    status_note: "面板 + ai-calls.jsonl 已实现；§2.2 验收口径非零 metrics 证据 run-2026-05-21T05-58-01-181Z（tokens 248/1818，latency 21854ms）"
+    evidence_runs:
+      - "run-2026-05-21T05-58-01-181Z"
+
+  - requirement_id: "F-010"
+    acceptance_ids:
+      - "AC-F010-01"
+      - "AC-F010-02"
+    design_refs:
+      - "docs/01-understanding.md#22-评判亮点全部必达"
+      - "docs/02-prd.md#f-010-业务上下文反哺22-5"
+    plan_refs:
+      - "docs/06-plan.md#冲刺关键路径:H1"
+      - "docs/06-plan.md#冲刺关键路径:H2"
+      - "docs/06-plan.md#冲刺关键路径:H8"
+      - "docs/06-plan.md#冲刺关键路径:H9"
+    implementation_refs:
+      - "docs/reports/runs/<run-id>/requirement.md"
+      - "docs/reports/runs/<run-id>/plan.md"
+      - "docs/reports/runs/<run-id>/history-recall.json"
+      - "services/orchestrator/src/historyRecall.js"
+    test_refs:
+      - "services/orchestrator/src/historyRecall.test.js"
+    pr_refs: []
+    status: "rules_verified"
+    status_note: "history-recall 使用 degraded/skipped；plan.history_references 已写入（H8–H9）"
+
+  - requirement_id: "F-011"
+    acceptance_ids:
+      - "AC-F011-01"
+      - "AC-F011-02"
+      - "AC-F011-03"
+    design_refs:
+      - "docs/04-design.md#页面-6提交材料与-ai-留痕页"
+      - "docs/06-plan.md#m7提交材料与答辩"
+      - "docs/03-spec.md#证据规格"
+    plan_refs:
+      - "docs/06-plan.md#冲刺关键路径:S6"
+      - "docs/06-plan.md#冲刺关键路径:S7"
+      - "docs/06-plan.md#冲刺关键路径:S8"
+    implementation_refs:
+      - "docs/reports/submission/checklist.md"
+      - "docs/reports/submission/demo-script.md"
+      - "docs/reports/submission/architecture.md"
+      - "docs/reports/submission/engineering-notes.md"
+    test_refs: []
+    test_refs_note: "提交材料完整度为人工检查项，无自动化测试"
+    pr_refs:
+      - "docs/reports/runs/<run-id>/pr-draft.md"
+    status: "partial_manual_pending"
+
+  - requirement_id: "F-012"
+    acceptance_ids:
+      - "AC-F012-01"
+      - "AC-F012-02"
+      - "AC-F012-03"
+    design_refs:
+      - "docs/04-design.md#页面-6提交材料与-ai-留痕页"
+      - "docs/05-dev.md#安全与配置"
+      - "docs/03-spec.md#配置与安全规格"
+    plan_refs:
+      - "docs/06-plan.md#冲刺关键路径:H4"
+      - "docs/06-plan.md#冲刺关键路径:S2"
+      - "docs/06-plan.md#冲刺关键路径:S3"
+      - "docs/06-plan.md#冲刺关键路径:S4"
+      - "docs/06-plan.md#冲刺关键路径:S5"
+    implementation_refs:
+      - "docs/reports/runs/<run-id>/ai-calls.jsonl"
+      - "docs/reports/submission/ai-usage.md"
+      - "docs/reports/submission/prompt-changelog.md"
+      - "docs/reports/submission/clarify-conversation-export.md"
+      - ".env.example"
+    test_refs:
+      - "services/orchestrator/src/aiUsage.test.js"
+    test_refs_note: "密钥检查为人工复核项，无自动化测试脚本"
+    pr_refs: []
+    status: "llm_verified"
+    status_note: "ai-calls.jsonl、ai-usage.md、prompt-changelog.md、clarify-conversation-export.md 已闭合；真实 LLM 留痕 run-2026-05-21T05-58-01-181Z"
+    evidence_runs:
+      - "run-2026-05-21T05-58-01-181Z"

@@ -1,0 +1,160 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { createApp } from "./app.js";
+import { makeRunDir, mkdtempProjectRoot, successfulRun } from "./appTestHelpers.js";
+
+test("POST /api/runs returns and stores failed run evidence", async () => {
+  const evidenceDir = await makeRunDir("run-failed");
+  const app = createApp({
+    runDelivery: async () => {
+      const error = new Error("Verification failed");
+      error.runResult = {
+        runId: "run-failed",
+        stage: "failed",
+        status: "failed",
+        error: "Verification failed",
+        evidenceDir,
+        events: [{ stage: "failed", message: "Verification failed" }],
+        verification: {
+          status: "failed",
+          checks: [{ command: "npm test", exitCode: 1 }],
+        },
+      };
+      throw error;
+    },
+  });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await postJson(`${baseUrl}/api/runs`, { input: "test" });
+    const payload = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.equal(payload.run.runId, "run-failed");
+    assert.equal(payload.run.status, "failed");
+
+    const stored = await fetch(`${baseUrl}/api/runs/run-failed`);
+    const storedPayload = await stored.json();
+    assert.equal(stored.status, 200);
+    assert.equal(storedPayload.stage, "failed");
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("POST /api/runs/:id/retry starts a new run with original input", async () => {
+  const inputs = [];
+  const root = await mkdtempProjectRoot("super-individual-api-");
+  const app = createApp({
+    runDelivery: async ({ input }) => {
+      inputs.push(input);
+      const evidenceDir = await makeRunDir(`run-${inputs.length}`, root);
+      return successfulRun({ runId: `run-${inputs.length}`, evidenceDir, input });
+    },
+  });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const first = await postJson(`${baseUrl}/api/runs`, { input: "original requirement" });
+    const firstPayload = await first.json();
+    const retry = await postJson(`${baseUrl}/api/runs/${firstPayload.runId}/retry`);
+    const retryPayload = await retry.json();
+
+    assert.equal(retry.status, 201);
+    assert.deepEqual(inputs, ["original requirement", "original requirement"]);
+    assert.equal(retryPayload.runId, "run-2");
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("POST /api/runs/:id/retry accepts revised input and records source run", async () => {
+  const inputs = [];
+  const root = await mkdtempProjectRoot("super-individual-api-");
+  const app = createApp({
+    runDelivery: async ({ input }) => {
+      inputs.push(input);
+      const evidenceDir = await makeRunDir(`run-retry-${inputs.length}`, root);
+      return successfulRun({ runId: `run-retry-${inputs.length}`, evidenceDir, input });
+    },
+  });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const first = await postJson(`${baseUrl}/api/runs`, { input: "original" });
+    const firstPayload = await first.json();
+    const retry = await postJson(`${baseUrl}/api/runs/${firstPayload.runId}/retry`, {
+      input: "revised",
+    });
+    const retryPayload = await retry.json();
+
+    assert.equal(retry.status, 201);
+    assert.deepEqual(inputs, ["original", "revised"]);
+    assert.equal(retryPayload.retryOf, firstPayload.runId);
+    assert.equal(retryPayload.sourceInput, "revised");
+    assert.equal(retryPayload.events.at(-1).stage, "retry");
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("POST /api/runs requires explicit input", async () => {
+  const calls = [];
+  const app = createApp({
+    runDelivery: async ({ input }) => {
+      calls.push(input);
+      const evidenceDir = await makeRunDir("run-empty-input");
+      return successfulRun({ runId: "run-empty-input", evidenceDir, input });
+    },
+  });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await postJson(`${baseUrl}/api/runs`, { input: "" });
+    const payload = await response.json();
+
+    assert.equal(response.status, 400);
+    assert.equal(payload.error.message, "Requirement input is required");
+    assert.deepEqual(calls, []);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("POST /api/runs rejects passed runs without required evidence", async () => {
+  const evidenceDir = await makeRunDir("run-incomplete-success");
+  const app = createApp({
+    runDelivery: async ({ input }) => ({
+      runId: "run-incomplete-success",
+      stage: "ready_for_pr",
+      status: "passed",
+      evidenceDir,
+      requirementCard: { goal: "展示阅读量", source_input: input },
+      events: [],
+    }),
+  });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await postJson(`${baseUrl}/api/runs`, { input: "incomplete success" });
+    const payload = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.equal(payload.error.message, "Run result plan is required");
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+function postJson(url, body) {
+  return fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+}
