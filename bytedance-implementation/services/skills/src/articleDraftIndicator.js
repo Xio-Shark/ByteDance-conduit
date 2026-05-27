@@ -8,7 +8,7 @@ export const articleDraftIndicatorSkill = Object.freeze({
   intent: "在文章列表与 API 中展示草稿状态",
   appliesWhen: ["草稿", "draft", "草稿状态"],
   targetPaths: [PREVIEW_PATH, ARTICLE_MODEL, ALL_ARTICLES],
-  validation: ["npm test"],
+  validation: ["npm run lint:sandbox", "npm test"],
 });
 
 export async function applyArticleDraftIndicator(sandbox) {

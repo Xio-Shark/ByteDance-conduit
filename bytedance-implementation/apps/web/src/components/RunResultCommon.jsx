@@ -28,7 +28,7 @@ export function ConfirmButton({ onConfirm, target }) {
   return (
     <button className="confirm-button" onClick={() => onConfirm(target)}>
       <CheckCircle2 />
-      <span>Confirm {target}</span>
+      <span>Record review: {target}</span>
     </button>
   );
 }

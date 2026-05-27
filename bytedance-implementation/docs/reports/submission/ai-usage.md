@@ -7,9 +7,9 @@
 | 层级 | 状态 | 说明 |
 |------|------|------|
 | **代码级 P0** | 已实现 | `AI_MODE=rules`（`rules-first-p0`）跑通澄清 → Conduit 写入 → lint/单测 → PR 草稿 |
-| **课题完成** | **部分完成** | §2.2 代码与验收 run 已闭合；§8.2 视频/公开双仓/团队信息待人工提交 |
+| **课题完成** | **部分完成** | §2.2 代码与验收 run 已闭合；§8.2 视频/公开 AI 系统主仓（内含 `sandbox-repo/`）/团队信息待人工提交 |
 
-实现仓支持 `AI_MODE=rules`（默认）与 `AI_MODE=llm`（`clarifyWithLlm` + `LLM_*` 环境变量）。**§2.2 #4/#6 不可降级**；答辩前须归档符合验收口径的 LLM run（见文档仓 [`06-plan` H3–H4](../../../../docs/06-plan.md#冲刺关键路径进度-ssot)）。
+实现仓支持显式 `AI_MODE=rules` 与 `AI_MODE=llm`（`clarifyWithLlm` + `LLM_*` 环境变量）；缺 `AI_MODE` 直接失败。**§2.2 #4/#6 不可降级**；答辩前须归档符合验收口径的 LLM run（见文档仓 [`06-plan` H3–H4](../../../../docs/06-plan.md#冲刺关键路径进度-ssot)）。
 
 | 模式 | 标识 | 用途 | 状态 |
 |------|------|------|------|
@@ -26,6 +26,16 @@
 |----------|------|----------|----------|------|
 | `mimo-v2.5` | clarify 模糊需求追问（§2.2 #6 / #4） | 个人 API 账户 | 否 | 已用（`run-2026-05-21T05-58-01-181Z`） |
 | `rules-first-p0` | 代码级 P0 胶水链路 | 无 API 费用 | 否 | 已用 |
+
+## 豆包决策（团队共识，2026-05-21）
+
+| 项 | 结论 |
+|----|------|
+| 是否必须豆包 | **否**（[`docs/01-understanding.md`](../../../../docs/01-understanding.md)：§7.2 允许多模型，须在本文声明） |
+| §2.2 #6 验收证据 | `run-2026-05-21T05-58-01-181Z`（`mimo-v2.5`，模糊输入 + `clarifications[]`） |
+| P1-5「补豆包 clarify」 | **已决策跳过**；不另跑豆包 run |
+| 早期 doubao 探索 run | legacy；清晰 L1 输入，**不计入 #6**（见 `prompt-changelog.md`） |
+| 答辩口径 | PDF §2.1 豆包为参考表述；以 §7.2 多模型声明 + 上述验收 run 举证 |
 
 ## 合规（§7.2-4，答辩前必填）
 
@@ -49,11 +59,13 @@
 
 ## 观测展示
 
-Web 控制台的 AI Usage 面板解析 `ai-calls.jsonl`。规则模式下 tokens / 延迟 / 成本为 0 是预期行为；**课题完成** 须有一条 **§2.2 验收口径** 的 LLM 记录（模糊输入 + 非零 tokens，见 H4/H13）。
+Web 控制台的 AI Usage 面板解析 `ai-calls.jsonl`。规则模式下 tokens / 延迟 / 成本为 0 是预期行为；**课题完成** 须有一条 **§2.2 验收口径** 的 LLM 记录（模糊输入 + 非零 tokens，见 H4/H13）。跨 run 汇总只聚合 `run-summary.json` 标记为 `passed` 且 `ai-calls.jsonl` 非空的归档；失败、暂停、legacy 或不完整归档进入 `skipped`，不计入 tokens / latency totals。
+
+当前代码路径要求 `ai-calls.jsonl` 显式写入 `prompt_version`、`input_summary`、`output_summary` 与 tokens/latency/cost；`run-summary.json.aiUsage` / `failure.json.aiUsage` 由生产路径持久化，读取和跨 run 汇总只校验一致性，不现场补造展示值。早期 legacy run 保持原始归档，不回写改造。
 
 ## 人工审阅
 
-- 需求卡片、方案与 PR 草稿可在控制台查看；`POST /api/runs/:id/confirm` 记录 `approved` / `rejected`（v1 为事后留痕，编排自动跑通全链路）。
+- 需求卡片、方案与 PR 草稿可在控制台查看；常规模式下 Web「Record review」按钮与 `POST /api/runs/:id/confirm` 记录 `approved` / `rejected` 作为事后留痕，编排自动跑通全链路。演示真阻塞人工确认时启用 `BLOCK_ON_CONFIRM=1`，系统会进入 `waiting_requirement_confirm` / `waiting_plan_confirm`，再通过 continue API 继续下游阶段。
 - `retry` 基于修订输入 **创建新 run**（`retryOf`），不是中间阶段断点重放；断点重放见 `POST /api/runs/:id/resume-from-stage`（H5–H7 已验收）。
 - 核心链路（Conduit 写入、lint / 单测、PR 草稿）不得用 mock 仓库或伪验证替代。
 

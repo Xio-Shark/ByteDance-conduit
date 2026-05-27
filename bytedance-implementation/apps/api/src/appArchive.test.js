@@ -23,6 +23,12 @@ test("GET /api/runs/:id restores archived run after cold start", async () => {
     retryOf: "run-original",
     confirmations: [{ target: "plan", decision: "approved" }],
     events: [{ stage: "retry", message: "retried from run-original" }],
+    checkpoints: {
+      ready_for_pr: {
+        at: "2026-05-21T00:00:00.000Z",
+        artifacts: ["pr-draft.md"],
+      },
+    },
   }));
 
   const app = createApp({ projectRoot });
@@ -41,7 +47,13 @@ test("GET /api/runs/:id restores archived run after cold start", async () => {
     assert.equal(payload.aiCalls[0].stage, "clarify");
     assert.equal(payload.aiUsage.tokensIn, 10);
     assert.equal(payload.events[0].stage, "retry");
+    assert.deepEqual(payload.edit.changedFiles, ["frontend/src/App.jsx"]);
+    assert.equal(payload.edit.summary, "archived plan");
+    assert.equal(payload.plan.summary, "archived plan");
+    assert.equal(payload.verification.status, "passed");
+    assert.deepEqual(payload.checkpoints.ready_for_pr.artifacts, ["pr-draft.md"]);
     assert.match(payload.diff, /diff --git/);
+    assert.equal(payload.prDraft, "# PR\n");
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
@@ -63,6 +75,186 @@ test("GET /api/runs/:id rejects incomplete successful archive", async () => {
 
     assert.equal(response.status, 500);
     assert.match(payload.error.message, /diff.patch/);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("GET /api/runs/:id rejects archive without persisted aiUsage", async () => {
+  const projectRoot = await mkdtempProjectRoot("super-individual-archive-");
+  const runId = "run-archived-missing-ai-usage";
+  const runDir = await makeRunDir(runId, projectRoot);
+  await writeSuccessfulArchive({ runDir, runId, aiUsage: null });
+
+  const app = createApp({ projectRoot });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await fetch(`${baseUrl}/api/runs/${runId}`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.match(payload.error.message, /aiUsage/);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("GET /api/runs/:id rejects archive with mismatched aiUsage", async () => {
+  const projectRoot = await mkdtempProjectRoot("super-individual-archive-");
+  const runId = "run-archived-mismatched-ai-usage";
+  const runDir = await makeRunDir(runId, projectRoot);
+  await writeSuccessfulArchive({
+    runDir,
+    runId,
+    aiUsage: { stages: 1, tokensIn: 999, tokensOut: 4, latencyMs: 80, costEstimate: 0.01 },
+  });
+
+  const app = createApp({ projectRoot });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await fetch(`${baseUrl}/api/runs/${runId}`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.match(payload.error.message, /aiUsage\.tokensIn/);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("GET /api/runs/:id rejects archive with string aiUsage numbers", async () => {
+  const projectRoot = await mkdtempProjectRoot("super-individual-archive-");
+  const runId = "run-archived-string-ai-usage";
+  const runDir = await makeRunDir(runId, projectRoot);
+  await writeSuccessfulArchive({
+    runDir,
+    runId,
+    aiUsage: { stages: 1, tokensIn: "10", tokensOut: 4, latencyMs: 80, costEstimate: 0.01 },
+  });
+
+  const app = createApp({ projectRoot });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await fetch(`${baseUrl}/api/runs/${runId}`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.match(payload.error.message, /aiUsage\.tokensIn must be a finite JSON number/);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("GET /api/runs/:id rejects archive with string ai-call numbers", async () => {
+  const projectRoot = await mkdtempProjectRoot("super-individual-archive-");
+  const runId = "run-archived-string-ai-call";
+  const runDir = await makeRunDir(runId, projectRoot);
+  await writeSuccessfulArchive({
+    runDir,
+    runId,
+    aiCall: {
+      stage: "clarify",
+      model: "mimo-v2.5",
+      prompt_version: "1.0.0-llm",
+      input_summary: "archived input",
+      output_summary: "archived goal",
+      tokens_in: "10",
+      tokens_out: 4,
+      latency_ms: 80,
+      cost_estimate: 0.01,
+      status: "completed",
+    },
+  });
+
+  const app = createApp({ projectRoot });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await fetch(`${baseUrl}/api/runs/${runId}`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.match(payload.error.message, /tokens_in must be a finite JSON number/);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("GET /api/runs/:id restores paused run after cold start", async () => {
+  const projectRoot = await mkdtempProjectRoot("super-individual-paused-archive-");
+  const runId = "run-paused-archived";
+  const runDir = await makeRunDir(runId, projectRoot);
+  await writePausedArchive({ runDir, runId });
+
+  const app = createApp({ projectRoot });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await fetch(`${baseUrl}/api/runs/${runId}`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.equal(payload.runId, runId);
+    assert.equal(payload.status, "paused");
+    assert.equal(payload.stage, "waiting_requirement_confirm");
+    assert.equal(payload.sourceInput, "paused input");
+    assert.equal(payload.requirementCard.goal, "paused goal");
+    assert.equal(payload.aiCalls[0].model, "rules-first-p0");
+    assert.equal(payload.aiUsage.tokensIn, 0);
+    assert.equal(payload.historyRecall.matches.length, 0);
+    assert.equal(payload.events[0].stage, "clarifying");
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("GET /api/runs/:id rejects paused archive without AI call evidence", async () => {
+  const projectRoot = await mkdtempProjectRoot("super-individual-paused-archive-");
+  const runId = "run-paused-missing-ai-calls";
+  const runDir = await makeRunDir(runId, projectRoot);
+  await writePausedArchive({ runDir, runId, aiCalls: null });
+
+  const app = createApp({ projectRoot });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await fetch(`${baseUrl}/api/runs/${runId}`);
+    const payload = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.match(payload.error.message, /ai-calls\.jsonl/);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("GET /api/runs-index lists paused archived runs", async () => {
+  const projectRoot = await mkdtempProjectRoot("super-individual-paused-index-");
+  const runId = "run-paused-indexed";
+  const runDir = await makeRunDir(runId, projectRoot);
+  await writePausedArchive({ runDir, runId });
+
+  const app = createApp({ projectRoot });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await fetch(`${baseUrl}/api/runs-index`);
+    const payload = await response.json();
+    const run = payload.runs.find((candidate) => candidate.runId === runId);
+
+    assert.equal(response.status, 200);
+    assert.equal(run.status, "paused");
+    assert.equal(run.stage, "waiting_requirement_confirm");
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
@@ -122,7 +314,14 @@ test("POST /api/runs/:id/confirm works for archived run after cold start", async
   }
 });
 
-async function writeSuccessfulArchive({ diff = "diff --git a/file b/file\n", events, runDir, runId }) {
+async function writeSuccessfulArchive({
+  aiCall,
+  aiUsage = { stages: 1, tokensIn: 10, tokensOut: 4, latencyMs: 80, costEstimate: 0.01 },
+  diff = "diff --git a/file b/file\n",
+  events,
+  runDir,
+  runId,
+}) {
   await writeFile(path.join(runDir, "run-summary.json"), JSON.stringify({
     runId,
     stage: "ready_for_pr",
@@ -130,6 +329,7 @@ async function writeSuccessfulArchive({ diff = "diff --git a/file b/file\n", eve
     repoPath: "/tmp/sandbox",
     evidenceDir: runDir,
     verificationStatus: "passed",
+    ...(aiUsage ? { aiUsage } : {}),
     ...(events ? { events } : {}),
   }));
   await writeMarkdownJson(path.join(runDir, "requirement.md"), {
@@ -143,10 +343,68 @@ async function writeSuccessfulArchive({ diff = "diff --git a/file b/file\n", eve
   await writeFile(path.join(runDir, "verification.json"), JSON.stringify({ status: "passed", checks: [] }));
   await writeFile(path.join(runDir, "history-recall.json"), JSON.stringify({ matches: [], skipped: [] }));
   await writeAiCalls(path.join(runDir, "ai-calls.jsonl"), [
-    { stage: "clarify", tokens_in: 10, tokens_out: 4, latency_ms: 80, cost_estimate: 0.01 },
+    aiCall || {
+      stage: "clarify",
+      model: "mimo-v2.5",
+      prompt_version: "1.0.0-llm",
+      input_summary: "archived input",
+      output_summary: "archived goal",
+      tokens_in: 10,
+      tokens_out: 4,
+      latency_ms: 80,
+      cost_estimate: 0.01,
+      status: "completed",
+    },
   ]);
   if (diff !== null) await writeFile(path.join(runDir, "diff.patch"), diff);
   await writeFile(path.join(runDir, "pr-draft.md"), "# PR\n");
+}
+
+async function writePausedArchive({ aiCalls, runDir, runId }) {
+  await writeFile(path.join(runDir, "paused.json"), JSON.stringify({
+    runId,
+    stage: "waiting_requirement_confirm",
+    at: "2026-05-21T00:00:00.000Z",
+  }));
+  await writeFile(path.join(runDir, "metadata.json"), JSON.stringify({
+    stage: "waiting_requirement_confirm",
+    status: "paused",
+    retryOf: null,
+    confirmations: [],
+    events: [{ stage: "clarifying", message: "Build requirement card" }],
+    checkpoints: {
+      clarifying: {
+        at: "2026-05-21T00:00:00.000Z",
+        artifacts: ["requirement.md", "history-recall.json", "ai-calls.jsonl"],
+      },
+    },
+  }));
+  await writeMarkdownJson(path.join(runDir, "requirement.md"), {
+    source_input: "paused input",
+    goal: "paused goal",
+    scope: { include: ["paused include"], exclude: ["paused exclude"] },
+    assumptions: ["paused assumption"],
+    clarifications: ["paused clarification"],
+    acceptance: ["paused acceptance"],
+    level: "L1",
+  });
+  await writeFile(path.join(runDir, "history-recall.json"), JSON.stringify({ matches: [], skipped: [] }));
+  if (aiCalls !== null) {
+    await writeAiCalls(path.join(runDir, "ai-calls.jsonl"), aiCalls || [
+      {
+        stage: "clarify",
+        model: "rules-first-p0",
+        prompt_version: "rules-first-p0",
+        input_summary: "paused input",
+        output_summary: "paused goal",
+        tokens_in: 0,
+        tokens_out: 0,
+        latency_ms: 0,
+        cost_estimate: 0,
+        status: "reviewed",
+      },
+    ]);
+  }
 }
 
 function postJson(url, body) {

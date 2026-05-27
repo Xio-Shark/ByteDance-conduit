@@ -1,8 +1,14 @@
-export async function buildPlan({ requirementCard, sandbox, skill, historyRecall }) {
+import { buildSandboxIndex, readSandboxFileIndex } from "../../index/src/sandboxIndex.js";
+
+export async function buildPlan({ requirementCard, sandbox, skill, historyRecall, repoPath, env = process.env }) {
+  rejectUnsupportedPlanMode(env);
   await sandbox.assertFiles(skill.targetPaths);
 
   const historyReferences = buildHistoryReferences(historyRecall);
   const impactMatrix = buildImpactMatrix(requirementCard, skill);
+  const resolvedRepoPath = requireRepoPath(repoPath, sandbox);
+  const sandboxIndex = await buildSandboxIndex(resolvedRepoPath);
+  const targetIndex = await readSandboxFileIndex(resolvedRepoPath, skill.targetPaths);
 
   return {
     summary: planSummary(requirementCard, skill),
@@ -13,9 +19,29 @@ export async function buildPlan({ requirementCard, sandbox, skill, historyRecall
     impact_matrix: impactMatrix,
     history_references: historyReferences,
     target_files: skill.targetPaths,
+    sandbox_index: {
+      fileCount: sandboxIndex.fileCount,
+      frontendFiles: sandboxIndex.modules.frontend.length,
+      backendFiles: sandboxIndex.modules.backend.length,
+      targets: targetIndex,
+    },
     risks: planRisks(requirementCard, skill),
     validation_commands: skill.validation,
   };
+}
+
+function rejectUnsupportedPlanMode(env) {
+  if (env.PLAN_MODE && env.PLAN_MODE !== "rules") {
+    throw new Error("PLAN_MODE=llm is not supported because planning LLM calls are not persisted to ai-calls.jsonl");
+  }
+}
+
+function requireRepoPath(repoPath, sandbox) {
+  const resolvedRepoPath = repoPath || sandbox.repoPath;
+  if (typeof resolvedRepoPath !== "string" || !resolvedRepoPath.trim()) {
+    throw new Error("Planning Agent requires a sandbox repo path");
+  }
+  return resolvedRepoPath;
 }
 
 function planSummary(requirementCard, skill) {
@@ -24,6 +50,9 @@ function planSummary(requirementCard, skill) {
   }
   if (skill.id === "article-detail-word-count") {
     return "在文章详情页基于 Article.body 展示字数统计。";
+  }
+  if (skill.id === "popular-tags-top-five") {
+    return "在 Popular Tags 侧边栏为前 5 个标签增加醒目标记。";
   }
   return "在 Conduit 文章列表卡片增加确定性阅读量展示。";
 }

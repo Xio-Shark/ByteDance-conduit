@@ -7,7 +7,7 @@ export const articleDetailWordCountSkill = Object.freeze({
   intent: "在文章详情页展示正文字数",
   appliesWhen: ["字数", "字数统计", "word count", "详情页"],
   targetPaths: [ARTICLE_PATH, STYLE_PATH],
-  validation: ["npm test"],
+  validation: ["npm run lint:sandbox", "npm test"],
 });
 
 export async function applyArticleDetailWordCount(sandbox) {

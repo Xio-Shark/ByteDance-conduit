@@ -9,7 +9,7 @@ export const articleListDisplayFieldSkill = Object.freeze({
   intent: "在文章列表卡片增加展示字段",
   appliesWhen: ["文章列表", "阅读量", "展示字段", "front-end display"],
   targetPaths: [PREVIEW_PATH, STYLE_PATH],
-  validation: ["npm test"],
+  validation: ["npm run lint:sandbox", "npm test"],
 });
 
 export async function applyArticleListDisplayField(sandbox) {

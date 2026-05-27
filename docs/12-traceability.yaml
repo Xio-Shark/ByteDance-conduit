@@ -45,7 +45,7 @@ traceability:
       - "services/skills/src/articleListDisplayField.test.js"
     pr_refs: []
     status: "rules_verified"
-    status_note: "rules 模式下 Planning Agent 为硬编码模板（summary/impacted_modules/risks 固定）；sandbox.assertFiles 已验证目标文件存在；§2.2 跨栈影响矩阵（AC-F002-02 L2 扩展）未闭合"
+    status_note: "Planning Agent 已读取 sandbox 索引、Skill 与 history recall；目标文件缺失会 fail-fast；L2 影响矩阵已在 run-2026-05-21T05-52-12-490Z 验证"
 
   - requirement_id: "F-003"
     acceptance_ids:
@@ -71,7 +71,7 @@ traceability:
       - "apps/api/src/app.test.js"
     pr_refs: []
     status: "rules_verified"
-    status_note: "3 个 Skill 已注册；第 3 模式仅新增 Skill 文件，未改 Orchestrator/Agent 主干（H12）"
+    status_note: "4 个 Skill 已注册；第 3/4 模式仅新增 Skill 文件，未改 Orchestrator/Agent 主干（H12/S7 录屏待人工）"
 
   - requirement_id: "F-004"
     acceptance_ids:
@@ -236,11 +236,18 @@ traceability:
       - "docs/reports/submission/demo-script.md"
       - "docs/reports/submission/architecture.md"
       - "docs/reports/submission/engineering-notes.md"
+      - "docs/reports/submission/defense-prep.md"
+      - "docs/reports/submission/team-info.md"
+      - "docs/reports/submission/video-recording-guide.md"
+      - "docs/reports/submission/public-repo-guide.md"
+      - "docs/reports/submission/security-check-report.md"
+      - "docs/reports/submission/dependency-audit-decision.md"
     test_refs: []
     test_refs_note: "提交材料完整度为人工检查项，无自动化测试"
     pr_refs:
       - "docs/reports/runs/<run-id>/pr-draft.md"
     status: "partial_manual_pending"
+    status_note: "submission 文档包已齐（defense-prep 等）；Demo/视频/公开 AI 系统主仓 URL 与团队姓名仍待人工（S6/S7/S8）"
 
   - requirement_id: "F-012"
     acceptance_ids:

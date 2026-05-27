@@ -55,6 +55,19 @@ export function loadSubmission(runId) {
   });
 }
 
+export function loadAiUsageSummary() {
+  return requestJson("/api/ai-usage/summary", {
+    errorMessage: "AI usage summary failed",
+  });
+}
+
+export function continueRun(runId) {
+  return requestJson(`/api/runs/${runId}/continue`, {
+    method: "POST",
+    errorMessage: "Continue run failed",
+  });
+}
+
 async function requestJson(path, { method = "GET", body, errorMessage }) {
   const init = {
     method,

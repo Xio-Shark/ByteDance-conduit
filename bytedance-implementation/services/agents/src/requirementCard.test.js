@@ -19,9 +19,32 @@ test("validateRequirementCard accepts complete card", () => {
 
 test("parseRequirementCardFromLlm parses fenced JSON", () => {
   const content = "```json\n" + JSON.stringify(SAMPLE) + "\n```";
-  const card = parseRequirementCardFromLlm(content, SAMPLE.source_input);
+  const card = parseRequirementCardFromLlm(content);
   assert.equal(card.id, "REQ-TEST");
   assert.equal(card.level, "L1");
+});
+
+test("parseRequirementCardFromLlm rejects missing source_input", () => {
+  const { source_input, ...withoutSourceInput } = SAMPLE;
+
+  assert.throws(
+    () => parseRequirementCardFromLlm(JSON.stringify(withoutSourceInput)),
+    /source_input/,
+  );
+});
+
+test("parseRequirementCardFromLlm rejects flattened scope aliases", () => {
+  const { scope, ...withoutScope } = SAMPLE;
+  const flattenedScope = {
+    ...withoutScope,
+    scope_include: scope.include,
+    scope_exclude: scope.exclude,
+  };
+
+  assert.throws(
+    () => parseRequirementCardFromLlm(JSON.stringify(flattenedScope)),
+    /scope/,
+  );
 });
 
 test("validateRequirementCard rejects missing clarifications", () => {

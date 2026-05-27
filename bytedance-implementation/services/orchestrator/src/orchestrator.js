@@ -1,6 +1,7 @@
-import { runDelivery, resumeFromStage, buildAiCallRecords } from "./deliveryPipeline.js";
+import { buildAiCallRecords } from "./aiCallRecords.js";
+import { runDelivery, resumeFromStage, continueDelivery } from "./deliveryPipeline.js";
 
-export { buildAiCallRecords };
+export { buildAiCallRecords, continueDelivery };
 
 export async function runP0Delivery(options = {}) {
   return runDelivery(options);

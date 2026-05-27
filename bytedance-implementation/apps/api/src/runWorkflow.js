@@ -1,11 +1,14 @@
-export async function executeRun({ input, retryOf, runDelivery, runStore }) {
+import { runEvidence } from "./runEvidenceGuards.js";
+
+export async function executeRun({ input, projectRoot, retryOf, runDelivery, runStore }) {
   const requirementInput = requireRequirementInput(input);
   try {
-    const result = await runDelivery({ input: requirementInput });
+    const result = await runDelivery({ input: requirementInput, projectRoot, env: process.env });
     const response = toRunResponse(result, requirementInput, retryOf);
     runStore.set(response);
     await runStore.persistMetadata(response);
-    return { statusCode: 201, body: response };
+    const statusCode = result.status === "paused" ? 202 : 201;
+    return { statusCode, body: response };
   } catch (error) {
     if (!error.runResult) throw error;
 
@@ -23,9 +26,11 @@ export async function executeRun({ input, retryOf, runDelivery, runStore }) {
 }
 
 export function toRunResponse(result, input, retryOf) {
-  const status = requireString(result.status, "status");
-  const stage = requireString(result.stage, "stage");
-  const events = [...requireArray(result.events, "events")];
+  const status = runEvidence.text(result.status, "status");
+  const stage = runEvidence.text(result.stage, "stage");
+  const events = [...runEvidence.array(result.events, "events")];
+  const aiCalls = runEvidence.optionalArray(result.aiCalls, "aiCalls");
+  const aiUsage = result.aiUsage || null;
   if (retryOf) {
     events.push({
       at: new Date().toISOString(),
@@ -34,87 +39,67 @@ export function toRunResponse(result, input, retryOf) {
     });
   }
   const response = {
-    runId: requireString(result.runId, "runId"),
-    sourceInput: result.requirementCard?.source_input ?? input,
+    runId: runEvidence.text(result.runId, "runId"),
+    sourceInput: result.requirementCard
+      ? runEvidence.text(result.requirementCard.source_input, "requirementCard.source_input")
+      : input,
     retryOf: retryOf || result.retryOf || null,
     stage,
     status,
     repoPath: result.repoPath ?? null,
-    evidenceDir: requireString(result.evidenceDir, "evidenceDir"),
+    evidenceDir: runEvidence.text(result.evidenceDir, "evidenceDir"),
     error: result.error,
     requirementCard: result.requirementCard || null,
     historyRecall: result.historyRecall ?? null,
     plan: result.plan || null,
     edit: result.edit || null,
     verification: result.verification || null,
-    aiCalls: optionalArray(result.aiCalls, "aiCalls"),
-    aiUsage: result.aiUsage || null,
+    aiCalls,
+    aiUsage,
     diff: result.diff ?? null,
     events,
-    confirmations: optionalArray(result.confirmations, "confirmations"),
+    confirmations: runEvidence.optionalArray(result.confirmations, "confirmations") || [],
     prSubmission: result.prSubmission || null,
     prDraft: result.prDraft ?? null,
     checkpoints: result.checkpoints || null,
   };
+  requireAiEvidenceAfterClarify(response);
   requireReadyForPrEvidence(response);
   return response;
+}
+
+function requireAiEvidenceAfterClarify(run) {
+  if (!hasReachedClarify(run)) return;
+  runEvidence.object(run.aiUsage, "aiUsage");
+  runEvidence.nonEmptyArray(run.aiCalls, "aiCalls");
 }
 
 function requireReadyForPrEvidence(run) {
   if (run.status !== "passed" && run.stage !== "ready_for_pr") {
     return;
   }
-  requireObject(run.requirementCard, "requirementCard");
-  requireObject(run.plan, "plan");
-  requireObject(run.edit, "edit");
-  requireObject(run.verification, "verification");
-  requireNonEmptyText(run.diff, "diff");
-  requireNonEmptyText(run.prDraft, "prDraft");
-  requireObject(run.aiUsage, "aiUsage");
-  requireNonEmptyArray(run.aiCalls, "aiCalls");
+  runEvidence.object(run.requirementCard, "requirementCard");
+  runEvidence.object(run.plan, "plan");
+  runEvidence.object(run.edit, "edit");
+  runEvidence.object(run.verification, "verification");
+  runEvidence.text(run.diff, "diff");
+  runEvidence.text(run.prDraft, "prDraft");
+  runEvidence.object(run.aiUsage, "aiUsage");
+  runEvidence.nonEmptyArray(run.aiCalls, "aiCalls");
 }
 
-function requireObject(value, name) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new Error(`Run result ${name} is required`);
-  }
-  return value;
-}
-
-function requireNonEmptyText(value, name) {
-  if (typeof value !== "string" || value.trim() === "") {
-    throw new Error(`Run result ${name} is required`);
-  }
-  return value;
-}
-
-function requireNonEmptyArray(value, name) {
-  if (!Array.isArray(value) || value.length === 0) {
-    throw new Error(`Run result ${name} is required`);
-  }
-  return value;
-}
-
-function requireArray(value, name) {
-  if (!Array.isArray(value)) {
-    throw new Error(`Run result ${name} must be an array`);
-  }
-  return value;
-}
-
-function optionalArray(value, name) {
-  if (value === undefined || value === null) return [];
-  if (!Array.isArray(value)) {
-    throw new Error(`Run result ${name} must be an array`);
-  }
-  return value;
-}
-
-function requireString(value, name) {
-  if (typeof value !== "string" || value.trim() === "") {
-    throw new Error(`Run result ${name} is required`);
-  }
-  return value;
+function hasReachedClarify(run) {
+  return Boolean(
+    run.aiUsage
+      || run.aiCalls
+      || run.requirementCard
+      || run.historyRecall
+      || run.plan
+      || run.edit
+      || run.verification
+      || run.diff
+      || run.prDraft,
+  );
 }
 
 function requireRequirementInput(input) {

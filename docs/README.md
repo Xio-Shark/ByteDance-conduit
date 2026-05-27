@@ -1,6 +1,9 @@
 # 设计基线文档 v1.0.0
 
-本目录是课题 **唯一事实源**，按端到端交付流程顺序阅读。根目录 [`README.md`](../README.md) 说明仓库边界与实现仓入口。
+本目录是课题 **唯一事实源**，按端到端交付流程顺序阅读。
+
+- 根目录 [`README.md`](../README.md) — 仓库边界与阅读路线
+- [`仓库导航.md`](../仓库导航.md) — **双仓目录树**与各文件职责（含实现仓 `runs/`、`submission/`）
 
 ## 阅读顺序
 
@@ -23,5 +26,7 @@
 
 - 修改范围、规格、计划或验收时，只改本目录对应文件。
 - **冲刺任务与优先级**只维护 [`06-plan.md#冲刺关键路径`](./06-plan.md#冲刺关键路径进度-ssot)；根目录 [`当前进度汇报.md`](../当前进度汇报.md) 为可读摘要，变更须同步 [`10-progress.md`](./10-progress.md)。
+- **模型/豆包口径**：不强制豆包；P1-5 已决策跳过；以 [`ai-usage.md`](../bytedance-implementation/docs/reports/submission/ai-usage.md) 与 01-understanding 为准。
+- **目录结构或新增顶层文件**时，同步更新 [`仓库导航.md`](../仓库导航.md)。
 - 真实源码、Conduit sandbox、run 证据在 [`bytedance-implementation/`](../bytedance-implementation/)。
 - 不再维护根目录 `设计文档/`、`源码文档/` 副本。

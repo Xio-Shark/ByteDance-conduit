@@ -15,6 +15,25 @@ test("POST /api/runs returns and stores failed run evidence", async () => {
         error: "Verification failed",
         evidenceDir,
         events: [{ stage: "failed", message: "Verification failed" }],
+        aiCalls: [{
+          stage: "clarify",
+          model: "rules-first-p0",
+          prompt_version: "rules-first-p0",
+          input_summary: "test",
+          output_summary: "展示阅读量",
+          tokens_in: 0,
+          tokens_out: 0,
+          latency_ms: 0,
+          cost_estimate: 0,
+          status: "reviewed",
+        }],
+        aiUsage: {
+          stages: 1,
+          tokensIn: 0,
+          tokensOut: 0,
+          latencyMs: 0,
+          costEstimate: 0,
+        },
         verification: {
           status: "failed",
           checks: [{ command: "npm test", exitCode: 1 }],
@@ -38,6 +57,63 @@ test("POST /api/runs returns and stores failed run evidence", async () => {
     const storedPayload = await stored.json();
     assert.equal(stored.status, 200);
     assert.equal(storedPayload.stage, "failed");
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("POST /api/runs rejects failed runs after clarify without AI evidence", async () => {
+  const evidenceDir = await makeRunDir("run-failed-missing-ai");
+  const app = createApp({
+    runDelivery: async ({ input }) => {
+      const error = new Error("Verification failed");
+      error.runResult = {
+        runId: "run-failed-missing-ai",
+        stage: "failed",
+        status: "failed",
+        error: "Verification failed",
+        evidenceDir,
+        events: [{ stage: "failed", message: "Verification failed" }],
+        requirementCard: { goal: "展示阅读量", source_input: input },
+        verification: {
+          status: "failed",
+          checks: [{ command: "npm test", exitCode: 1 }],
+        },
+      };
+      throw error;
+    },
+  });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await postJson(`${baseUrl}/api/runs`, { input: "test" });
+    const payload = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.equal(payload.error.message, "Run result aiUsage is required");
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("POST /api/runs rejects requirement cards without source_input", async () => {
+  const evidenceDir = await makeRunDir("run-missing-source-input");
+  const app = createApp({
+    runDelivery: async () => ({
+      ...successfulRun({ runId: "run-missing-source-input", evidenceDir, input: "test" }),
+      requirementCard: { goal: "展示阅读量" },
+    }),
+  });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await postJson(`${baseUrl}/api/runs`, { input: "test" });
+    const payload = await response.json();
+
+    assert.equal(response.status, 500);
+    assert.equal(payload.error.message, "Run result requirementCard.source_input is required");
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
@@ -134,6 +210,25 @@ test("POST /api/runs rejects passed runs without required evidence", async () =>
       status: "passed",
       evidenceDir,
       requirementCard: { goal: "展示阅读量", source_input: input },
+      aiCalls: [{
+        stage: "clarify",
+        model: "rules-first-p0",
+        prompt_version: "rules-first-p0",
+        input_summary: input,
+        output_summary: "展示阅读量",
+        tokens_in: 0,
+        tokens_out: 0,
+        latency_ms: 0,
+        cost_estimate: 0,
+        status: "reviewed",
+      }],
+      aiUsage: {
+        stages: 1,
+        tokensIn: 0,
+        tokensOut: 0,
+        latencyMs: 0,
+        costEstimate: 0,
+      },
       events: [],
     }),
   });
@@ -146,6 +241,21 @@ test("POST /api/runs rejects passed runs without required evidence", async () =>
 
     assert.equal(response.status, 500);
     assert.equal(payload.error.message, "Run result plan is required");
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("POST /api/runs-index/refresh is not exposed as an API write path", async () => {
+  const root = await mkdtempProjectRoot("super-individual-api-");
+  const app = createApp({ projectRoot: root });
+  const server = app.listen(0);
+
+  try {
+    const baseUrl = `http://127.0.0.1:${server.address().port}`;
+    const response = await postJson(`${baseUrl}/api/runs-index/refresh`);
+
+    assert.equal(response.status, 404);
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }

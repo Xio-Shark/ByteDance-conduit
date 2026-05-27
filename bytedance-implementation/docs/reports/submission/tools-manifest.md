@@ -2,7 +2,7 @@
 
 §7.2-6 建议项（S4）。记录**开发协作期**使用的工具与版本；与**产品运行时**模型清单（[`ai-usage.md`](./ai-usage.md)）分离。
 
-采集时间：2026-05-21。实现仓尚无 git commit，版本来自本地 `package.json` 与运行时探测。
+采集时间：2026-05-21。Git 发布状态以 [`public-repo-guide.md`](./public-repo-guide.md) 的 `git ls-files` / archive dry-run 校验为准，不以本地口头 git 状态判断；当前仍有未跟踪实现、run、submission 路径待公开发布前确认。`git ls-files` 与 archive dry-run 是本地发布候选校验，不是远端公开仓证据，也不替代 §8.2 外部门禁。
 
 ---
 
@@ -46,7 +46,7 @@
 
 | 变量 | 典型值 | 说明 |
 |------|--------|------|
-| `AI_MODE` | `rules` / `llm` | 默认 rules；§2.2 验收用 llm |
+| `AI_MODE` | `rules` / `llm` | 必须显式设置；§2.2 验收用 llm |
 | `LLM_MODEL` | `mimo-v2.5` | 模糊澄清验收 run |
 | `LLM_BASE_URL` | OpenAI 兼容网关 | 仅本地 `.env`，不入库 |
 | `SANDBOX_REPO_PATH` | `sandbox-repo/` | Conduit fork 路径 |
@@ -57,9 +57,9 @@
 
 ```bash
 cd bytedance-implementation
-npm run verify    # 53 项 Node/API 测试 + sandbox lint + Vitest + web build
+npm run verify    # 108 项 Node/API/Web/scripts 测试（107 pass / 1 skip）+ sandbox lint + Vitest + web build
 npm run run:p0:rules
-AI_MODE=llm npm run run:fuzzy-llm
+npm run run:fuzzy-llm
 ```
 
 ---

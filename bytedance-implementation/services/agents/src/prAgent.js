@@ -1,6 +1,7 @@
 export function buildPrDraft({ diff, plan, requirementCard, verification }) {
   const files = parseChangedFiles(diff).map((file) => `- ${file}`).join("\n");
   const tests = verification.checks.map(formatCheck).join("\n");
+  const risks = formatRisks(plan.risks);
 
   return `# PR Draft: ${requirementCard.goal}
 
@@ -17,8 +18,7 @@ ${files}
 ${tests}
 
 ## Risks
-- P0 adds deterministic front-end read counts for demo delivery; it does not add production analytics instrumentation.
-- If the Conduit repo has no lint script, the implementation repo runs ESLint on the changed Conduit files.
+${risks}
 
 ## Rollback
 Revert the generated patch or discard the branch before submitting PR.
@@ -30,6 +30,13 @@ ${summarizeDiff(diff)}
 
 function formatCheck(check) {
   return `- ${check.command}: exit ${check.exitCode}`;
+}
+
+function formatRisks(risks) {
+  if (!Array.isArray(risks) || risks.length === 0) {
+    throw new Error("PR draft requires plan.risks");
+  }
+  return risks.map((risk) => `- ${risk}`).join("\n");
 }
 
 function summarizeDiff(diff) {

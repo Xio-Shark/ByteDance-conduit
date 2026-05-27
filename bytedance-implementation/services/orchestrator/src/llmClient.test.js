@@ -58,3 +58,50 @@ test("createLlmClient parses chat response", async () => {
   assert.ok(result.latencyMs >= 0);
   assert.ok(result.costEstimate > 0);
 });
+
+test("createLlmClient rejects responses without usage", async () => {
+  const client = createLlmClient(
+    {
+      LLM_API_KEY: "test-key",
+      LLM_BASE_URL: "https://ai.example.com",
+      LLM_MODEL: "test-model",
+    },
+    async () => ({
+      ok: true,
+      async text() {
+        return JSON.stringify({
+          choices: [{ message: { content: "{}" } }],
+        });
+      },
+    }),
+  );
+
+  await assert.rejects(
+    () => client.chat({ messages: [{ role: "user", content: "hi" }] }),
+    /missing usage/,
+  );
+});
+
+test("createLlmClient rejects non-positive usage token counts", async () => {
+  const client = createLlmClient(
+    {
+      LLM_API_KEY: "test-key",
+      LLM_BASE_URL: "https://ai.example.com",
+      LLM_MODEL: "test-model",
+    },
+    async () => ({
+      ok: true,
+      async text() {
+        return JSON.stringify({
+          choices: [{ message: { content: "{}" } }],
+          usage: { prompt_tokens: 0, completion_tokens: 12 },
+        });
+      },
+    }),
+  );
+
+  await assert.rejects(
+    () => client.chat({ messages: [{ role: "user", content: "hi" }] }),
+    /prompt_tokens\/input_tokens/,
+  );
+});

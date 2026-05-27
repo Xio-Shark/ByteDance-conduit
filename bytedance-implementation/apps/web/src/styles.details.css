@@ -94,6 +94,41 @@
   margin-bottom: 10px;
 }
 
+.cross-run-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.cross-run-list li {
+  display: grid;
+  gap: 2px;
+}
+
+.clarifications {
+  margin: 12px 0;
+}
+
+.clarifications ol {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0 0;
+  padding-left: 1rem;
+}
+
+.clarifications li p {
+  margin: 4px 0 0;
+}
+
+.clarify-round {
+  color: #3c89ff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .usage-metric {
   background: #f6f8f8;
   border-radius: 6px;

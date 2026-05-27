@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { verifyRun } from "./verificationAgent.js";
+import { articleListDisplayFieldSkill } from "../../skills/src/articleListDisplayField.js";
+import { articleDraftIndicatorSkill } from "../../skills/src/articleDraftIndicator.js";
 
 test("verifyRun fails when required test script is missing", async () => {
   const sandbox = createFakeSandbox({ scripts: {} });
@@ -31,21 +33,62 @@ test("verifyRun passes when lint and test commands pass", async () => {
   assert.equal(verification.checks[0].source, "conduit-script");
 });
 
-test("verifyRun marks implementation lint adapter when Conduit lint is absent", async () => {
+test("verifyRun uses implementation lint adapter only when Skill declares it", async () => {
   const sandbox = createFakeSandbox({
     scripts: { test: "vitest" },
   });
 
-  const verification = await verifyRun({ sandbox });
+  const verification = await verifyRun({ sandbox, skill: articleListDisplayFieldSkill });
 
   assert.equal(verification.status, "passed");
   assert.equal(verification.checks[0].command, "npm run lint:sandbox");
   assert.equal(verification.checks[0].source, "implementation-lint-adapter");
 });
 
-function createFakeSandbox({ scripts }) {
+test("verifyRun fails when Conduit lint is absent and Skill does not declare adapter", async () => {
+  const sandbox = createFakeSandbox({
+    scripts: { test: "vitest" },
+  });
+
+  const verification = await verifyRun({
+    sandbox,
+    skill: { id: "no-lint-adapter", validation: ["npm test"] },
+  });
+
+  assert.equal(verification.status, "failed");
+  assert.equal(verification.checks[0].command, "npm run lint");
+  assert.equal(verification.checks[0].status, "gap");
+  assert.equal(
+    verification.checks[0].summary,
+    "Conduit package.json has no lint script and Skill did not declare lint:sandbox",
+  );
+});
+
+test("verifyRun fails L2 draft check when changed files lack cross-stack anchors", async () => {
+  const sandbox = createFakeSandbox({
+    scripts: { lint: "eslint .", test: "vitest" },
+    files: {
+      "frontend/src/components/ArticlesPreview/ArticlesPreview.jsx": "draft comment only",
+      "backend/models/Article.js": "draft comment only",
+      "backend/controllers/articles.js": "draft comment only",
+    },
+  });
+
+  const verification = await verifyRun({
+    sandbox,
+    skill: articleDraftIndicatorSkill,
+    changedFiles: articleDraftIndicatorSkill.targetPaths,
+  });
+  const crossStack = verification.checks.find((check) => check.command === "cross-stack-sync");
+
+  assert.equal(verification.status, "failed");
+  assert.equal(crossStack.status, "failed");
+});
+
+function createFakeSandbox({ scripts, files = {} }) {
   return {
     listPackageScripts: async () => scripts,
+    readText: async (path) => files[path],
     runNpmScript: async (scriptName) => ({
       command: `npm run ${scriptName}`,
       exitCode: 0,

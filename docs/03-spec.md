@@ -173,8 +173,9 @@ docs/reports/submission/
 **§8.2 公开仓库结构**（最终提交，非代码级 P0 阻塞项）：
 
 - 对外链接指向 **AI 系统主仓**（即 `bytedance-implementation/` 的公开 GitHub/GitLab）。
-- 同一公开仓内须包含 **Conduit fork 子仓**，推荐路径 `sandbox-repo/`（clone/submodule/worktree 均可），评审可独立查看 Conduit diff 来源。
+- 同一公开仓内须包含 **Conduit 代码目录**，推荐路径 `sandbox-repo/`（普通子目录、submodule 或 subtree 均可；当前实现采用普通子目录），评审可独立查看 Conduit diff 来源。
 - 本文档仓 `bytedance/` 仅为设计基线，**不能**替代上述 AI 主仓提交。
+- §8.2 不要求直接向 `TonyMckes/conduit-realworld-example-app` 上游仓库提交 PR；真实 draft PR / 上游 PR 属于 H17 可选远端能力。
 
 ## 验证规格
 
@@ -183,80 +184,58 @@ P0 最低验证链路：
 1. `sandbox-repo` 来源可证明为 Conduit fork / clone 或裁剪子集。
 2. 目标文件存在且在 Conduit 路径内。
 3. 代码变更通过真实 git diff 呈现。
-4. lint 命令来自仓库真实 script；若 Conduit 缺少 lint script，必须使用针对本次 Conduit 改动的显式 adapter 并在 `verification.json` 记录来源。
+4. lint 命令来自仓库真实 script；若 Conduit 缺少 lint script，只有 Skill `validation` 显式声明 `npm run lint:sandbox` 时才可使用针对本次 Conduit 改动的 adapter，并在 `verification.json` 记录来源；未声明则记为 `gap` / failed。
 5. 相关单测命令来自仓库真实 script；缺失测试必须记录缺口，不允许伪成功。
 6. `verification.json` 记录命令、退出码、摘要、日志路径、来源和状态。
 7. **集成测试**：源题 §6 工程完整度观测口径含「集成测试绿」；P0 最低线为 lint + 单测，集成测试列为 **P1 加分/答辩补强**，有则写入 `verification.json`，无则显式标记缺口。
 
-## 当前实现约束
+## 当前实现状态
 
-截至 2026-05-21：代码级 §2.1 闭环已在 `AI_MODE=rules` 下跑通。**§2.2 六项缺口**（`AI_MODE=llm` 代码路径已存在，待 H3–H4 验收 run；见 [`06-plan#冲刺关键路径`](./06-plan.md#冲刺关键路径进度-ssot)）：
+截至 2026-05-22：代码级 §2.1 已闭环，§2.2 六项已有代码 / run 证据；`npm run verify` 通过（108 项 Node/API/Web/scripts 测试，107 pass / 1 skip，另含 sandbox lint、Conduit Vitest、Web build）。**课题完成仍未闭合**：§8.2 的 Demo URL、演示视频、公开 AI 系统主仓和团队信息仍待人工。
 
-| # | 亮点 | 状态 | 闭合阻塞项 |
-|---|------|------|-----------|
-| 1 | 抽象到位 | 仅 1 个 Skill；须增第 2/3 个并演示只加文件 | Skill 扩展机制需支持 L2 跨栈路径；当前 Skill 是前端锚点替换模式 |
-| 2 | 断点重放 | 仅 `retry` 新 run；须 `resume-from-stage` | Orchestrator 从线性管道改为事件溯源 + 阶段 checkpoint |
-| 3 | 跨栈一致性 | 仅 L1 前端 run；须 L2 跨栈 run | Planning Agent 须从硬编码模板改为可推理；需理解 Conduit backend 结构 |
-| 4 | 可观测性 | 面板有；须 §2.2 验收口径 LLM run 的非零 metrics | 早期 doubao 探索 run 非零 tokens 但非模糊输入验收 |
-| 5 | 业务上下文反哺 | 召回已有；须 plan 引用 + 相似 run 演示 | Planning Agent 须接收 history-recall；须先清理坏归档 |
-| 6 | 澄清深度 | `clarifyWithLlm` 已实现；须模糊输入 + LLM 追问 run | 清晰 L1 输入的 LLM run **不计入** #6 |
+| # | 亮点 | 代码 / run 证据 | 剩余边界 |
+|---|------|----------------|----------|
+| 1 | 抽象到位 | 4 个 Skill；第 3/4 个仅新增 Skill 文件，不改 Orchestrator/Agent 主干 | S7 录屏需展示只加 Skill 文件的接入过程 |
+| 2 | 断点重放 | `resume-from-stage` API、checkpoints、Web 入口已实现 | S7 录屏需展示 plan 后只重跑 edit→verify→pr |
+| 3 | 跨栈一致性 | L2 run `run-2026-05-21T05-52-12-490Z`；plan 影响矩阵 + backend/frontend diff + `crossStackSync` | 当前是 Skill 驱动的跨路径同步，不等同于任意后端字段自动推导全前端改造 |
+| 4 | 可观测性 | run `run-2026-05-21T05-58-01-181Z` 非零 tokens/latency；Web 单 run + 跨 run AI Usage 面板 | S7 录屏需展示面板 |
+| 5 | 业务上下文反哺 | `history-recall.json` + `plan.history_references`；相似 run `run-2026-05-21T05-51-56-519Z` | 不完整历史归档保持 `degraded/skipped`，不伪装全量召回 |
+| 6 | 澄清深度 | 模糊输入 LLM run `run-2026-05-21T05-58-01-181Z` 含 `clarifications[]` | 清晰 L1 原句 run 不计入 #6 |
 
 ### Agent 当前实现真实状态
 
-上表「Agent 规格」定义的是目标态。截至 2026-05-21，`AI_MODE=rules` 下各 Agent 的实际行为如下——**与目标态有显著差距**：
+| Agent | 当前实现 | 边界 |
+|-------|----------|------|
+| Requirement Agent | `AI_MODE=rules` 走已注册演示模式；`AI_MODE=llm` 走 `clarifyWithLlm()` 并校验完整需求卡片 | rules 不是通用自然语言理解；未知需求必须 fail-fast |
+| Planning Agent | 读取 sandbox 文件索引、Skill、history recall；L2 可输出影响矩阵；缺目标文件直接失败 | 仍是受 Skill 约束的确定性规划，不声称任意需求全自动推理 |
+| Coding Agent | 通过 `skill.apply(sandbox)` 执行具体改动 | 业务模式逻辑留在 Skill，不在 Agent 主干堆分支 |
+| Verification Agent | 执行真实 sandbox 命令和显式声明的 lint adapter | 缺 script / 缺锚点按失败或 gap 记录，不伪成功 |
+| PR Agent | 生成本地 PR 草稿；可选 GitHub draft PR provider 已实现 | 真实远端 PR 是 H17 可选项，不是 §8.2 最小提交要求 |
 
-| Agent | 目标态 | rules 模式实际行为 | 闭合 §2.2 所需改动 |
-|-------|--------|-------------------|-------------------|
-| Requirement Agent | 根据输入推理澄清问题、输出需求卡片 | `buildRequirement()` 返回硬编码 requirement card（goal/scope/exclude 固定），不读输入语义 | `AI_MODE=llm` 走 `clarifyWithLlm()`（已实现 + 单测）；须 **模糊输入** 端到端验收 run（H4） |
-| Planning Agent | 读仓库索引、选 Skill、输出方案与影响范围 | `buildPlan()` 返回硬编码中文 plan（summary/impacted_modules/risks 固定），不读仓库结构 | 须接收 history-recall 数据入 plan；L2 须输出跨栈影响矩阵 |
-| Coding Agent | 基于方案与 Skill 生成 patch | `applyCodingPlan()` 仅 `skill.apply(sandbox)` 一行 passthrough；全部逻辑在 Skill 内 | Skill 扩展机制需支持 L2 多路径写入；Coding Agent 本身无需改动 |
-| Verification Agent | 执行 lint/单测并收集结果 | 真实执行 Conduit 命令，已闭环 | 无需改动 |
-| PR Agent | 生成 PR 标题/描述/风险 | 模板拼接 PR 文案，已闭环 | 无需改动 |
+### 剩余完成边界
 
-**关键差距**：Requirement Agent 和 Planning Agent 在 rules 模式下是硬编码空壳，不具备推理能力。§2.2 的闭合路径是 LLM 模式替代 rules 模式做 clarify（#6），以及 Planning Agent 接收外部数据入 plan（#5）和输出跨栈影响矩阵（#3），而非让 rules 模式具备这些能力。
-
-### §2.2 闭合依赖链
-
-```text
-AI_MODE=llm 稳定运行 ─┬─→ #6 澄清深度（模糊输入 + LLM 追问）
-                      ├─→ #4 可观测性（非零 tokens/延迟/成本）
-                      └─→ #5 业务上下文反哺（plan 引用召回）— 需改 planningAgent 入 historyRecall
-                              │
-                              └─→ #3 跨栈一致性（L2 影响矩阵）— 需 Planning Agent 可推理
-                                      │
-                                      └─→ #1 抽象到位（新增 Skill）— 需 Skill 架构支持 L2
-
-Orchestrator 事件溯源重构 ─→ #2 断点重放（resume-from-stage）
-```
-
-**串行瓶颈**：#3/#5 依赖 Planning Agent 改造；#1 的 L2 Skill 依赖 #3 的跨栈能力。#2 独立于 LLM 路径，可并行推进。
-
-### 降级策略（如果 20 天内无法全部闭合）
-
-| 项 | 闭合路径 | 降级路径 | 降级后可声称 |
-|----|---------|---------|------------|
-| #1 抽象到位 | 3 Skill 含 1 个 L2 | 3 Skill 全 L1（如 Popular Tags 打标 + 文章字数统计），仍演示只加文件不改主干 | "Skill 扩展机制已验证，L2 Skill 需更长周期" |
-| #2 断点重放 | 完整事件溯源 + resume-from-stage API + 前端入口 | API 端 resume-from-stage 只重跑整条链路但保留上游证据文件；前端仅展示已归档事件流 | "阶段证据可追溯，精确断点重放为 P1 演进" |
-| #3 跨栈一致性 | Planning Agent 输出影响矩阵 + L2 跨栈 diff | plan.md 手动标注前后端影响 + Skill 同时写 frontend/backend 两处路径 | "跨栈 diff 已验证，影响矩阵自动推理为 P1" |
-| #4 可观测性 | LLM 非零 metrics + 面板汇总 | 已闭合（依赖 LLM 稳定，无独立降级路径） | — |
-| #5 业务上下文反哺 | plan 自动引用召回条目 | UI 展示召回结果 + plan.md 模板含"历史参考"段落由 Agent 填入 | "召回可演示，自动入 plan 为 P1" |
-| #6 澄清深度 | LLM 模糊输入追问 + requirement.md 证据 | 已闭合（依赖 LLM 稳定，无独立降级路径） | — |
-
-**不可降级**：#4 和 #6 直接依赖真实 LLM 调用，没有降级替代。如果 LLM 接入在截止前无法稳定，这两项也无法闭合。
+- **S6**：人工填写团队名称、成员、Demo URL、视频 URL、公开 AI 系统主仓 URL。
+- **S7**：录制 3–8 分钟演示视频，覆盖 §2.1 主链路和 §2.2 六项。
+- **S8**：公开 `bytedance-implementation/` 作为 AI 系统主仓，且仓内包含 `sandbox-repo/`。
+- **S10**：6.10 前提交 §8.2 材料。当前 `pre-submission-check.sh` 会因这些人工占位失败，这是正确的最终提交门禁行为。
 
 实现层收口（保持不变）：
 
-- 模型输出的 `requirement_card` 必须包含 `id`、`goal`、`scope.include`、`scope.exclude`、`assumptions`、`clarifications`、`acceptance` 和 `level`；缺字段直接失败，不用默认值补齐。
-- **代码级 P0** 默认 `AI_MODE=rules`。**§2.2** 要求真实 LLM（澄清深度、可观测非零 tokens）；须扩展 `AI_MODE=llm` 或等价。
+- 模型输出的 `requirement_card` 必须包含 `id`、`source_input`、`goal`、`scope.include`、`scope.exclude`、`assumptions`、`clarifications`、`acceptance` 和 `level`；缺字段直接失败，不用默认值补齐，也不用原始请求输入回填 `source_input`。
+- **代码级 P0** 通过显式 `AI_MODE=rules` 运行；rules 只支持已注册演示模式，未知需求必须 fail-fast，不能静默套用阅读量主线。缺 `AI_MODE` 必须失败。**§2.2** 要求真实 LLM（澄清深度、可观测非零 tokens）；须使用 `AI_MODE=llm` 或等价。
 - `article-list-display-field` Skill 必须找到预期 JSX / CSS 锚点才写入；目标结构漂移时直接失败，不生成半成功 patch。
-- API 路由只保留 HTTP 编排，run 存取、run response 映射、人工确认、PR 提交和 submission 状态拆到独立小模块。
+- API 路由只保留 HTTP 编排；`runRoutes.js` 只聚合 run 路由，执行、证据读取、人工确认 / PR / submission 拆到独立小模块，run response 映射与存取逻辑继续独立维护。
 - Web 入口、状态编排、HTTP client 与结果面板拆分，关键证据或事件日志缺失会显示错误态，不用普通空态掩盖。
 - 人工确认必须显式提交 `approved` 或 `rejected`，确认 metadata 写入失败会返回错误，不再由 API 静默默认成通过或成功。
-- API 创建 run 必须提供非空需求输入；返回 `passed` / `ready_for_pr` 必须带完整 requirement、plan、edit、verification、diff、PR draft、AI usage 和 AI calls；归档成功 run 必须具备 `requirement.md`、`plan.md`、`verification.json`、`diff.patch`、`pr-draft.md` 和 `ai-calls.jsonl`，缺失即失败。
-- `ai-calls.jsonl` 只记录真实模型或规则化澄清调用；tokens、延迟和成本必须是显式数字，确定性 plan / edit / verify / PR draft 阶段以各自证据文件表达。
+- API 创建 run 必须提供非空需求输入；返回已过 clarify 的 run 必须带 AI usage 和 AI calls；返回 `passed` / `ready_for_pr` 还必须带完整 requirement、plan、edit、verification、diff、PR draft。归档成功 run 必须具备 `requirement.md`、`plan.md`、`verification.json`、`diff.patch`、`pr-draft.md`、`ai-calls.jsonl` 和 `run-summary.json.aiUsage`，缺失即失败。
+- `ai-calls.jsonl` 只记录真实模型或规则化澄清调用；真实 LLM response 必须返回 usage token 计数，`prompt_version`、`input_summary`、`output_summary`、tokens、延迟和成本必须显式写入且为 JSON number，不接受字符串数值，不从 plan、固定文案或 0 值默认补齐；确定性 plan / edit / verify / PR draft 阶段以各自证据文件表达。
+- 跨 run AI Usage 只聚合 `run-summary.json.status == "passed"`、存在非空 `ai-calls.jsonl` 且 `run-summary.json.aiUsage` 与调用日志汇总一致的归档；失败、暂停、legacy 或不完整归档进入 `skipped` / `invalidRuns`，不会混入可观测性验收 totals。
+- Planning Agent 必须读取真实 `sandbox-repo` 路径和目标文件索引；缺 repo path、sandbox root 不存在或目标文件不存在时直接失败，不生成空 `sandbox_index` 或 `exists:false` 计划证据。
+- Skill 匹配必须有足够且唯一的意图证据；低置信度单关键词或并列候选直接失败并列出候选项，不静默选择最高排序项。
+- L2 跨栈校验必须检查具体前端/后端变更锚点（如 `article.draft`、`draft-badge`、`DataTypes.BOOLEAN`、controller 默认字段），不能只用泛文本关键词命中当作一致。
 - 历史召回只读取已落盘 evidence；不完整归档进入 `skipped`，整体状态标为 `degraded`（仍有可用 `matches` 时继续召回），不会把部分可用结果伪装成全量 ready。
-- GitHub draft PR 请求必须显式携带 `confirm=true`、`head` 和 `base`，GitHub 非 JSON 或不完整成功响应会暴露为错误。
-- 提交材料状态至少检查文件存在且非空；空文件标记为 `invalid`，不展示成已生成。
+- GitHub draft PR 请求必须显式携带 `confirm=true`、`head` 和 `base`，GitHub 非 JSON 或不完整成功响应会暴露为错误；该能力只在 H17 可选远端 PR 场景使用，不是 §8.2 最小提交的阻塞项。
+- 提交材料状态至少检查文件存在且非空；空文件标记为 `invalid`，不展示成已生成。§8.2 外部链接、团队信息和提交清单必须识别 `待填` / `待部署` / `待录制` / 未勾选项；占位内容返回 `pending_human`。URL 只可返回 `provided_unverified`，不能仅凭链接展示为最终 ready。
 
 ## 配置与安全规格
 
@@ -272,7 +251,7 @@ GITHUB_TOKEN=
 
 - 真实密钥只存在于本地环境变量或部署密钥。
 - README、派生文档、测试快照、运行报告中不得包含真实 API key。
-- 默认不推送远程分支；创建真实 PR 必须由用户显式确认并提供 `head` / `base`。
+- 默认不推送远程分支；创建真实 PR 必须由用户显式确认并提供 `head` / `base`。若目标是上游 Conduit，通常应先 fork 到有权限的账号，再从 fork 分支发起 PR。
 - 如接入额外模型，提交材料必须声明模型清单、用途、费用承担和合规边界。
 
 ## P0 验收门槛（§2.1 MVP）
@@ -301,7 +280,7 @@ GITHUB_TOKEN=
 | 门槛 | 必须证据 |
 |------|----------|
 | AI 留痕 | 真实 LLM 调用记录；`ai-usage.md` 声明 |
-| 公开双仓 | AI 主仓 + `sandbox-repo/` 子仓 |
+| 公开主仓 | 公开 AI 系统主仓，且仓内包含 `sandbox-repo/` |
 | 演示 | Demo、3–8 分钟视频（覆盖 §2.1 + §2.2 六项） |
 
 ## P2 演进规格

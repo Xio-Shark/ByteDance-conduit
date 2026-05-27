@@ -35,7 +35,7 @@ export async function clarifyWithLlm({ input, modelClient }) {
     ],
   });
 
-  const requirementCard = parseRequirementCardFromLlm(response.content, trimmed);
+  const requirementCard = parseRequirementCardFromLlm(response.content);
   const tokensIn = response.tokensIn;
   const tokensOut = response.tokensOut;
 
