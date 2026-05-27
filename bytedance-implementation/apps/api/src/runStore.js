@@ -24,6 +24,8 @@ export function createRunStore(projectRoot) {
         throw new Error("Run evidenceDir is required to persist metadata");
       }
       const metadata = {
+        stage: run.stage,
+        status: run.status,
         retryOf: run.retryOf || null,
         confirmations: requireArray(run.confirmations, "confirmations"),
         events: requireArray(run.events, "events"),

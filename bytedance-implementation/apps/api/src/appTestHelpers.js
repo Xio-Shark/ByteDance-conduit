@@ -41,6 +41,9 @@ export function successfulRun({
       {
         stage: "clarify",
         model: "rules-first-p0",
+        prompt_version: "rules-first-p0",
+        input_summary: input,
+        output_summary: "展示阅读量",
         tokens_in: 0,
         tokens_out: 0,
         latency_ms: 0,

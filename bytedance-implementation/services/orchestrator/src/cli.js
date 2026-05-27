@@ -1,10 +1,15 @@
 import "dotenv/config";
-import { P0_INPUT } from "../../../libs/types/src/stages.js";
 import { runP0Delivery } from "./orchestrator.js";
+import { PROJECT_ROOT } from "./deliveryConfig.js";
 
-const input = process.argv.slice(2).join(" ");
+const input = process.argv.slice(2).join(" ").trim();
 
-runP0Delivery({ input: input || P0_INPUT })
+if (!input) {
+  console.error("Requirement input is required.");
+  process.exit(1);
+}
+
+runP0Delivery({ input, projectRoot: PROJECT_ROOT })
   .then((result) => {
     console.log(JSON.stringify({
       runId: result.runId,

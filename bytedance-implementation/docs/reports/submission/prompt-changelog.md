@@ -2,7 +2,9 @@
 
 对齐文档仓 [`docs/05-dev.md#ai-使用留痕`](../../../../docs/05-dev.md#ai-使用留痕) 与 §7.2-1（Prompt / Skill 版本与变更意图）。
 
-**时间线来源**：实现仓 run 归档目录 `docs/reports/runs/`（35 个 run，2026-05-20 17:09 UTC 至 2026-05-21 05:58 UTC）。本地仓库截至 2026-05-21 尚无 git commit，故不引用 commit hash，以 run ID 与源码路径为证据。
+**时间线来源**：run 归档 + 当前工作区文件。远端公开仓 URL 见 [`public-repo-guide.md`](./public-repo-guide.md)（待填）；公开前须按发布指南确认关键路径已进入 Git 跟踪或 archive 清单。该确认只是本地发布候选校验，不是远端公开仓证据，也不替代 §8.2 外部门禁。
+
+**豆包决策（2026-05-21）**：不强制豆包；P1-5 已团队决策跳过。§2.2 #6 验收证据为 `run-2026-05-21T05-58-01-181Z`（`mimo-v2.5`）。早期 doubao 清晰 L1 run 为 legacy 探索，不计入 #6。详见 [`ai-usage.md`](./ai-usage.md)。
 
 ---
 
@@ -10,8 +12,9 @@
 
 1. **clarify 双路径**：`AI_MODE=rules` 用规则工厂（`rules-first-p0`）；`AI_MODE=llm` 用 `clarifyWithLlm` + 远端模型（验收 run 使用 `mimo-v2.5`）。
 2. **plan / edit / verify / pr** 走确定性 Agent + Skill，**不写入** `ai-calls.jsonl`（事实源为 `plan.md`、`diff.patch`、`verification.json`、`pr-draft.md`）。
-3. **新增需求模式优先新增 Skill 文件**，注册到 `services/skills/src/registry.js`，不改 Orchestrator / Agent 主干（§2.2 #1）。
-4. **模糊输入**须产出 `clarifications[]` 开放问题；清晰 L1 原句的 legacy 探索 run **不计入** §2.2 #6 验收口径。
+3. **rules 模式 fail-fast**：只支持已注册演示模式；未知需求不再默认套用阅读量主线，须走 LLM 澄清或新增 Skill。
+4. **新增需求模式优先新增 Skill 文件**，注册到 `services/skills/src/registry.js`，不改 Orchestrator / Agent 主干（§2.2 #1）。
+5. **模糊输入**须产出 `clarifications[]` 开放问题；清晰 L1 原句的 legacy 探索 run **不计入** §2.2 #6 验收口径。
 
 ---
 
@@ -25,8 +28,8 @@
 | 版本 | 隐式 `1.0.0`（无独立 Prompt 文件） |
 | 源码 | `services/agents/src/requirementAgent.js` |
 | 引入时间 | 2026-05-20（首批 rules run 归档） |
-| 变更意图 | 代码级 P0 胶水：按关键词路由 L1 阅读量 / L2 草稿 / 详情字数，输出结构化需求卡片；tokens/延迟/成本恒为 0 |
-| 关键规则 | 阅读量 → L1 且 exclude 后端；草稿 → L2 跨栈；字数 → L1 详情页 |
+| 变更意图 | 代码级 P0 胶水：按关键词路由 L1 阅读量 / L2 草稿 / 详情字数 / Popular Tags，输出结构化需求卡片；tokens/延迟/成本恒为 0 |
+| 关键规则 | 阅读量 → L1 且 exclude 后端；草稿 → L2 跨栈；字数 → L1 详情页；Popular Tags → L1；未知 rules 输入 fail-fast |
 | 验收证据 | `run-2026-05-21T02-16-15-215Z`（代码级 P0 L1 闭环） |
 
 ### 2. `clarify-llm-system` · `1.0.0-llm`
@@ -40,7 +43,7 @@
 | 关键规则摘要 | 仅返回 JSON 需求卡片；`clarifications` 须为 PM 可回答的开放问题；L1 阅读量假数据场景 exclude 后端 schema |
 | 配套校验 | `services/agents/src/requirementCard.js` 缺字段直接失败 |
 | 验收证据 | `run-2026-05-21T05-58-01-181Z`（`mimo-v2.5`，248/1818 tokens，3 条 `clarifications[]`） |
-| 备注 | 归档 `ai-calls.jsonl` 中 `prompt_version` 字段可能显示 `1.0.0`（pipeline 回退到 skill_version）；源码 SSOT 为 `1.0.0-llm` |
+| 备注 | 验收 run 是收紧前归档，`prompt_version` 显示 `1.0.0`；当前代码路径不再回退到 `skill_version`，缺 `prompt_version` / summaries 会失败 |
 
 ### 3. Legacy 探索：`doubao-seed-2-0-lite-260428`（不计入 §2.2 #6）
 
@@ -77,6 +80,7 @@
 | 2026-05-21 05:52 | L2 + 第 3 Skill | +draft-indicator、+detail-word-count | H10–H12 |
 | 2026-05-21 05:57 | 模糊 LLM 迭代 | `1.0.0-llm` | 404 失败 → 澄清成功 → Skill 匹配失败 → 最终通过 |
 | 2026-05-21 05:58 | **§2.2 验收 run** | `1.0.0-llm` + `mimo-v2.5` | `run-2026-05-21T05-58-01-181Z` |
+| 2026-05-21 15:55 | rules fail-fast 收紧 | `rules-first-p0` | 未知需求不再静默落到阅读量；恢复路径必须读取已落盘 `ai-calls.jsonl` |
 
 ---
 
@@ -102,6 +106,7 @@
 | `run-2026-05-21T05-57-01-385Z` | LLM 网关 404 | 修正 `LLM_BASE_URL` 后重跑 |
 | `run-2026-05-21T05-57-39-036Z` | LLM 输出英文 goal，Skill 关键词未匹配 | 保留 fail-fast；答辩 run 仍匹配到 `article-list-display-field` |
 | H1 坏归档（3 条） | 缺 `requirement.md` | history-recall 标 `degraded` / `skipped`，不伪装 ready |
+| 跨 run AI Usage 污染风险 | 失败/暂停归档也可能有 `ai-calls.jsonl` | 只聚合 passed run，且要求 `run-summary.json.aiUsage` 与日志一致；其它归档进入 `skipped` / `invalidRuns` |
 
 ---
 

@@ -40,9 +40,8 @@ function parseAiCallLine(line, index) {
 }
 
 export function requireFiniteNumber(value, name) {
-  const number = Number(value);
-  if (!Number.isFinite(number)) {
-    throw new Error(`AI call ${name} must be a finite number`);
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`AI call ${name} must be a finite JSON number`);
   }
-  return number;
+  return value;
 }

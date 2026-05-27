@@ -11,3 +11,15 @@ test("resumeFromStage rejects unknown stage", async () => {
     /resume-from-stage must be one of/,
   );
 });
+
+test("resumeFromStage rejects revised input for downstream-only stages", async () => {
+  await assert.rejects(
+    () => resumeFromStage({
+      projectRoot: PROJECT_ROOT,
+      revisedInput: "改成展示收藏数",
+      runId: "run-missing",
+      stage: "editing",
+    }),
+    /revisedInput is only supported/,
+  );
+});

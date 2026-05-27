@@ -13,7 +13,8 @@ export class ConduitSandbox {
 
   resolve(relativePath) {
     const target = path.resolve(this.repoPath, relativePath);
-    if (!target.startsWith(this.repoPath)) {
+    const relative = path.relative(this.repoPath, target);
+    if (relative.startsWith("..") || path.isAbsolute(relative)) {
       throw new Error(`Path escapes sandbox: ${relativePath}`);
     }
     return target;

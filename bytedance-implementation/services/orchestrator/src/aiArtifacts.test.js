@@ -31,15 +31,14 @@ function mockModelClient() {
   };
 }
 
-test("buildAiArtifacts defaults to rules mode", async () => {
-  const result = await buildAiArtifacts({
-    env: {},
-    input: "给文章列表加阅读量展示",
-  });
-
-  assert.equal(result.mode, "rules");
-  assert.equal(result.requirementCard.level, "L1");
-  assert.equal(result.aiCalls[0].model, "rules-first-p0");
+test("buildAiArtifacts requires explicit AI_MODE", async () => {
+  await assert.rejects(
+    () => buildAiArtifacts({
+      env: {},
+      input: "给文章列表加阅读量展示",
+    }),
+    /AI_MODE is required/,
+  );
 });
 
 test("buildAiArtifacts uses explicit rules mode", async () => {
@@ -49,7 +48,22 @@ test("buildAiArtifacts uses explicit rules mode", async () => {
   });
 
   assert.equal(result.mode, "rules");
+  assert.equal(result.requirementCard.level, "L1");
+  assert.equal(result.aiCalls[0].model, "rules-first-p0");
+  assert.equal(result.aiCalls[0].prompt_version, "rules-first-p0");
+  assert.equal(result.aiCalls[0].input_summary, "给文章列表加阅读量展示");
+  assert.equal(result.aiCalls[0].output_summary, "文章列表卡片展示阅读量");
   assert.equal(result.aiCalls[0].tokens_in, 0);
+});
+
+test("buildAiArtifacts rejects unknown rules-mode requirements", async () => {
+  await assert.rejects(
+    () => buildAiArtifacts({
+      env: { AI_MODE: "rules" },
+      input: "把用户主页做得更智能一点",
+    }),
+    /Rules mode cannot classify requirement/,
+  );
 });
 
 test("buildAiArtifacts uses llm mode with injected client", async () => {

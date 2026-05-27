@@ -49,9 +49,9 @@ export function createLlmClient(env = process.env, fetchImpl = globalThis.fetch)
         throw new Error("LLM response missing message content");
       }
 
-      const usage = payload.usage || {};
-      const tokensIn = numberOrZero(usage.prompt_tokens ?? usage.input_tokens);
-      const tokensOut = numberOrZero(usage.completion_tokens ?? usage.output_tokens);
+      const usage = requireUsage(payload.usage);
+      const tokensIn = requireTokenCount(usage.prompt_tokens ?? usage.input_tokens, "prompt_tokens/input_tokens");
+      const tokensOut = requireTokenCount(usage.completion_tokens ?? usage.output_tokens, "completion_tokens/output_tokens");
       const latencyMs = Date.now() - started;
 
       return {
@@ -88,9 +88,19 @@ function estimateCost(tokensIn, tokensOut) {
   return Number((total * 0.000002).toFixed(6));
 }
 
-function numberOrZero(value) {
+function requireUsage(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("LLM response missing usage");
+  }
+  return value;
+}
+
+function requireTokenCount(value, name) {
   const number = Number(value);
-  return Number.isFinite(number) && number > 0 ? number : 0;
+  if (!Number.isFinite(number) || number <= 0) {
+    throw new Error(`LLM response usage.${name} must be a positive number`);
+  }
+  return number;
 }
 
 function truncate(text, max) {

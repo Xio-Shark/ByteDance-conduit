@@ -120,11 +120,11 @@ requirements:
     priority: "P0"
     acceptance:
       - id: "AC-F009-01"
-        description: "每次 LLM 调用 ai-calls.jsonl 记录模型、tokens、延迟、成本、阶段、状态"
+        description: "每次 LLM 调用 ai-calls.jsonl 记录模型、prompt_version、input/output summary、tokens、延迟、成本、阶段、状态"
         test_type: "integration"
         stage: "observe"
       - id: "AC-F009-02"
-        description: "Web 控制台 AI Usage/成本汇总监控面板可展示调用明细与汇总"
+        description: "Web 控制台 AI Usage/成本汇总监控面板可展示调用明细与汇总；跨 run 汇总只统计 passed run，且 run-summary.json.aiUsage 必须与 ai-calls.jsonl 一致，失败/不完整归档进入 skipped"
         test_type: "e2e"
         stage: "observe"
 
@@ -154,7 +154,7 @@ requirements:
         test_type: "manual-review"
         stage: "submit"
       - id: "AC-F011-03"
-        description: "公开仓库为 AI 系统主仓，且内含 sandbox-repo/ Conduit fork 子仓（§8.2）"
+        description: "公开仓库为 AI 系统主仓，且内含 sandbox-repo/ Conduit 代码目录（§8.2）"
         test_type: "manual-review"
         stage: "submit"
 
@@ -175,11 +175,11 @@ requirements:
         test_type: "manual-review"
         stage: "submit"
 
-# 验收勾选（H15）；updated_at: 2026-05-21
+# 验收勾选（H15）；updated_at: 2026-05-22
 # status: verified | partial | manual_pending
 verification:
-  updated_at: "2026-05-21"
-  verify_command: "bytedance-implementation: npm run verify (53 tests)"
+  updated_at: "2026-05-22"
+  verify_command: "bytedance-implementation: npm run verify (108 Node/API/Web/scripts tests, 107 pass / 1 skip)"
   items:
     - id: AC-F001-01
       status: verified
@@ -198,7 +198,7 @@ verification:
       evidence: "Web RunResult plan section; L2 impact_matrix in plan.md"
     - id: AC-F003-01
       status: verified
-      evidence: "3 Skills in registry.js"
+      evidence: "4 Skills in registry.js"
     - id: AC-F003-02
       status: verified
       evidence: "deliveryPipeline.test.js"
@@ -255,7 +255,7 @@ verification:
       evidence: "S7 演示视频待录制"
     - id: AC-F011-03
       status: manual_pending
-      evidence: "S8 公开双仓待人工发布"
+      evidence: "S8 公开 AI 系统主仓待人工发布，仓内需包含 sandbox-repo/"
     - id: AC-F012-01
       status: verified
       evidence: "ai-calls.jsonl schema; aiUsage.test.js"

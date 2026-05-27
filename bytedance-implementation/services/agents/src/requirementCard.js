@@ -17,7 +17,7 @@ export function validateRequirementCard(card) {
   return card;
 }
 
-export function parseRequirementCardFromLlm(content, sourceInput) {
+export function parseRequirementCardFromLlm(content) {
   const parsed = extractJsonObject(content);
   if (!parsed || typeof parsed !== "object") {
     throw new Error("LLM clarify response must be a JSON object");
@@ -25,11 +25,11 @@ export function parseRequirementCardFromLlm(content, sourceInput) {
 
   const card = {
     id: parsed.id,
-    source_input: parsed.source_input ?? sourceInput,
+    source_input: parsed.source_input,
     goal: parsed.goal,
     scope: {
-      include: parsed.scope?.include ?? parsed.scope_include,
-      exclude: parsed.scope?.exclude ?? parsed.scope_exclude,
+      include: parsed.scope?.include,
+      exclude: parsed.scope?.exclude,
     },
     assumptions: parsed.assumptions,
     clarifications: parsed.clarifications,

@@ -26,6 +26,17 @@ test("parseAiCallLog exposes invalid jsonl lines", () => {
   );
 });
 
+test("summarizeAiCalls rejects numeric strings", () => {
+  const calls = parseAiCallLog(
+    "{\"stage\":\"clarify\",\"tokens_in\":\"10\",\"tokens_out\":5,\"latency_ms\":100,\"cost_estimate\":0.01}\n",
+  );
+
+  assert.throws(
+    () => summarizeAiCalls(calls),
+    /tokens_in must be a finite JSON number/,
+  );
+});
+
 test("buildAiCallRecords records only AI or rules model calls", () => {
   const calls = buildAiCallRecords({
     aiArtifacts: {
@@ -37,8 +48,11 @@ test("buildAiCallRecords records only AI or rules model calls", () => {
           tokens_out: 0,
           latency_ms: 0,
           cost_estimate: 0,
-          status: "reviewed",
-        },
+        status: "reviewed",
+        prompt_version: "rules-1",
+        input_summary: "input",
+        output_summary: "output",
+      },
       ],
     },
     plan: {
@@ -50,4 +64,34 @@ test("buildAiCallRecords records only AI or rules model calls", () => {
 
   assert.deepEqual(calls.map((call) => call.stage), ["clarify"]);
   assert.equal(calls[0].model, "rules-first-p0");
+  assert.equal(calls[0].prompt_version, "rules-1");
+  assert.equal(calls[0].input_summary, "input");
+  assert.equal(calls[0].output_summary, "output");
+});
+
+test("buildAiCallRecords rejects missing AI call summaries", () => {
+  assert.throws(
+    () => buildAiCallRecords({
+      aiArtifacts: {
+        aiCalls: [
+          {
+            stage: "clarify",
+            model: "rules-first-p0",
+            prompt_version: "rules-1",
+            tokens_in: 0,
+            tokens_out: 0,
+            latency_ms: 0,
+            cost_estimate: 0,
+            status: "reviewed",
+          },
+        ],
+      },
+      plan: {
+        skill_id: "article-list-display-field",
+        skill_version: "1.0.0",
+      },
+      runId: "run-test",
+    }),
+    /AI call input_summary is required/,
+  );
 });

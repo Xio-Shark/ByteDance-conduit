@@ -12,7 +12,15 @@ export function buildRequirement(input) {
     return wordCountRequirement(trimmed);
   }
 
-  return readCountRequirement(trimmed);
+  if (/popular tags|标签|前\s*5|top\s*5/i.test(trimmed)) {
+    return popularTagsRequirement(trimmed);
+  }
+
+  if (/文章列表|article list|阅读量|reads?|read count|展示字段/i.test(trimmed)) {
+    return readCountRequirement(trimmed);
+  }
+
+  throw new Error(`Rules mode cannot classify requirement: ${trimmed}`);
 }
 
 function readCountRequirement(trimmed) {
@@ -67,6 +75,32 @@ function draftRequirement(trimmed) {
       "diff 同时包含 frontend 与 backend 路径",
     ],
     level: "L2",
+  };
+}
+
+function popularTagsRequirement(trimmed) {
+  return {
+    id: "REQ-L1-POPULAR-TAGS-TOP-FIVE",
+    source_input: trimmed,
+    goal: "Popular Tags 前 5 个打标",
+    scope: {
+      include: ["Popular Tags", "标签", "前 5", "Conduit frontend sidebar"],
+      exclude: ["后端 schema", "数据库迁移"],
+    },
+    assumptions: [
+      "仅展示前 5 个标签并高亮",
+      "不改后端 API",
+    ],
+    clarifications: [
+      "标签数量限制为 5 个",
+      "通过 CSS 类区分 top 5 标签",
+    ],
+    acceptance: [
+      "Popular Tags 区域最多展示 5 个标签",
+      "top 5 标签有视觉高亮",
+      "变更落在 Conduit frontend 路径",
+    ],
+    level: "L1",
   };
 }
 

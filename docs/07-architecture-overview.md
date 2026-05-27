@@ -62,14 +62,14 @@ PM 输入 L1 需求
 | 模块 | 职责 | 不做什么 | 当前实现真实状态 |
 |------|------|----------|----------------|
 | Frontend Console | 展示流程、证据、人工确认入口 | 不直接读写本地仓库 | 已闭环：阶段进度、事件、diff、验证、PR 草稿、AI Usage 面板 |
-| Backend API | 暴露 run、confirm、retry、events、diff、pr-draft 接口 | 不包含具体需求模式逻辑 | 已闭环：run 创建/查询/confirm/retry/归档恢复/PR submission；缺 resume-from-stage |
-| Orchestrator | 管理阶段、状态、事件和失败 | 不写死具体 PM 文案 | 线性管道（clarify→plan→edit→verify→pr 顺序调用）；缺事件溯源和阶段级 checkpoint |
-| Requirement Agent | 根据输入推理澄清问题、输出需求卡片 | 在信息不足时直接写代码 | **rules**：硬编码工厂；**llm**：`clarifyWithLlm()` 已接入 + 单测；§2.2 #6 待 H4 模糊输入 run |
-| Planning Agent | 读仓库索引、选 Skill、输出方案与影响范围 | 编造不存在路径或命令 | **rules**：硬编码模板；须 H8 接入 history-recall + L2 影响矩阵 |
+| Backend API | 暴露 run、confirm、retry、events、diff、pr-draft、resume、submission 接口 | 不包含具体需求模式逻辑 | 已闭环：run 创建/查询/confirm/retry/continue/resume/归档恢复/PR submission/submission readiness |
+| Orchestrator | 管理阶段、状态、事件、checkpoint 和失败 | 不写死具体 PM 文案 | clarify→plan→edit→verify→pr 已拆分；支持 checkpoints、人工阻塞 confirm 和 resume-from-stage |
+| Requirement Agent | 根据输入推理澄清问题、输出需求卡片 | 在信息不足时直接写代码 | **rules**：已注册演示模式；**llm**：`clarifyWithLlm()` 已验收，模糊 run 含 `clarifications[]` |
+| Planning Agent | 读仓库索引、选 Skill、输出方案与影响范围 | 编造不存在路径或命令 | 读取 sandbox 索引、history recall 和 Skill；L2 可输出影响矩阵；缺真实目标文件 fail-fast |
 | Coding Agent | 基于方案与 Skill 生成 patch | 写入非授权路径 | 一行 passthrough：`skill.apply(sandbox)`；全部逻辑在 Skill 内 |
 | Verification Agent | 执行 lint/单测并收集结果 | 吞掉失败或伪造成功 | 已闭环：真实执行 Conduit 命令 + 实现仓 lint adapter |
 | PR Agent | 生成 PR 标题/描述/风险 | 隐瞒失败验证 | 已闭环：模板拼接 PR 文案 |
-| Skill Registry | 注册需求模式、匹配 Skill | 不替代主流程状态机 | 关键词 includes 匹配；仅 1 个 Skill（前端锚点替换模式） |
+| Skill Registry | 注册需求模式、匹配 Skill | 不替代主流程状态机 | 4 个 Skill；低置信度或并列匹配 fail-fast，不静默选第一个 |
 | Sandbox Adapter | 对真实 Conduit 仓库读、写、diff、执行命令 | 不使用 mock 仓库伪造结果 | 已闭环：read/write/diff/命令执行 |
 
 ## Spec 映射
@@ -111,15 +111,15 @@ P0 必须产出以下证据：
 
 | 亮点 | 架构承接 | 当前 |
 |------|----------|------|
-| 抽象到位 #1 | Skill Registry；第 3 模式仅增 Skill 文件 | 仅 1 Skill |
-| 断点重放 #2 | 阶段事件 + `resume-from-stage` | 仅 retry 新 run |
-| 跨栈一致性 #3 | L2 Planning 影响矩阵 + 跨栈 diff | 仅 L1 前端 |
-| 可观测性 #4 | `ai-calls.jsonl` + Web 监控面板 | 面板有；须 H4 验收 run 的非零 metrics |
-| 业务上下文反哺 #5 | history-recall → plan 引用 | 召回有；H1–H2 坏归档 + H8 plan 引用待做 |
-| 澄清深度 #6 | 真实 LLM + **模糊**输入追问 | llm 路径已有；H4 待验收 |
+| 抽象到位 #1 | Skill Registry；第 3/4 模式仅增 Skill 文件 | 4 Skill 已接入；S7 录屏待人工 |
+| 断点重放 #2 | 阶段事件 + `resume-from-stage` | API / checkpoint / Web 入口已实现；S7 录屏待人工 |
+| 跨栈一致性 #3 | L2 Planning 影响矩阵 + 跨栈 diff | L2 run `05-52-12` 已归档；为 Skill 驱动跨路径同步 |
+| 可观测性 #4 | `ai-calls.jsonl` + Web 监控面板 | LLM 非零 metrics run `05-58-01` + 面板已就绪；S7 录屏待人工 |
+| 业务上下文反哺 #5 | history-recall → plan 引用 | run `05-51-56` 已验证 plan 引用历史召回 |
+| 澄清深度 #6 | 真实 LLM + **模糊**输入追问 | run `05-58-01` 已验证 `clarifications[]` |
 
 闭合任务见 [06-plan 冲刺关键路径](./06-plan.md#冲刺关键路径进度-ssot)。
 
 ## 架构结论
 
-v1.0.0 架构须证明 §2.1 MVP，并在 M5–M7 **闭合 §2.2 六项**（见 [03-spec §2.2](./03-spec.md#22-评判亮点规格)）。
+v1.0.0 架构已证明 §2.1 MVP，并已有 §2.2 六项代码 / run 证据（见 [03-spec §2.2](./03-spec.md#22-评判亮点规格)）。最终课题完成仍取决于 §8.2 对外交付和 S7 答辩录屏。
