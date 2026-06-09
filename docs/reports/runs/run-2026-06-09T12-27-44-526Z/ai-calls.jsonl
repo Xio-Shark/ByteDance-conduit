@@ -1,0 +1,1 @@
+{"run_id":"run-2026-06-09T12-27-44-526Z","stage":"clarify","model":"rules-first-p0","prompt_version":"rules-first-p0","skill_id":"popular-tags-top-five","input_summary":"给 Popular Tags 侧边栏前 5 个标签打醒目标记。","output_summary":"Popular Tags 前 5 个打标","tokens_in":0,"tokens_out":0,"latency_ms":0,"cost_estimate":0,"status":"reviewed"}
