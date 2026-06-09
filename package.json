@@ -13,7 +13,7 @@
     "dev:web": "npm run dev -w apps/web",
     "lint": "npm run lint:sandbox",
     "lint:sandbox": "eslint sandbox-repo/frontend/src/components/ArticlesPreview/ArticlesPreview.jsx && stylelint sandbox-repo/frontend/src/styles.css",
-    "run:p0": "AI_MODE=rules node services/orchestrator/src/cli.js \"给文章列表加阅读量展示，前端假数据即可，不改后端。\"",
+    "run:p0": "AI_MODE=llm PLAN_MODE=llm node services/orchestrator/src/cli.js \"给文章列表加阅读量展示，前端假数据即可，不改后端。\"",
     "run:p0:rules": "AI_MODE=rules node services/orchestrator/src/cli.js \"给文章列表加阅读量展示，前端假数据即可，不改后端。\"",
     "run:fuzzy-llm": "AI_MODE=llm node services/orchestrator/src/cli.js \"文章列表想好看一点，加点数据，别动太多代码。\"",
     "archive:dry-run": "node scripts/archive-dry-run.mjs",

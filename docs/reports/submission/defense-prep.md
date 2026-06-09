@@ -101,7 +101,7 @@ npm run check:defense-rehearsal
 | 问 | 答 |
 |----|-----|
 | 跨栈一致性怎么做到的？ | Skill 只声明 `schemaChange={Article, coverImage, STRING}`（≤30 行），`services/codegen/schemaDriver.js` 解析 Sequelize model → `frontendGenerators.js` 自动生成前端 TS/service/mock + 注入 backend controller + preview 组件，共改 6 个文件且不手写 targetPaths |
-| 如果评委现场要改另一个字段？ | 复制 article-cover-image  Skill，改 `schemaChange` 字段名 + 类型 + appliesWhen 关键词，重新注册到 registry，`npm run run:p0` 即可自动推断目标；≤5 分钟完成 |
+| 如果评委现场要改另一个字段？ | 复制 article-cover-image Skill，改 `schemaChange` 字段名 + 类型 + appliesWhen 关键词，放进 `services/skills/src/` 即被 registry 目录自动发现（无需改 registry），`npm run run:p0` 即可自动推断目标；≤5 分钟完成 |
 | 为什么不用完整 AST？ | 降级到正则 + 模板字符串；答辩承认 v0 简化，但功能已跑通且 fail-fast 健壮 |
 
 ### U2：多轮 LLM 澄清（propose + refine + CLARIFYING_AWAITING_ANSWER）
@@ -116,15 +116,15 @@ npm run check:defense-rehearsal
 | 问 | 答 |
 |----|-----|
 | plan 为什么要接 LLM？ | 避免 §6.1 扣分项 #3「关键能力 mock」：全链路只有 1 行 clarify ai-call 会被评委一眼识别；U3 让 plan 也调模型，ai-calls 出现 `stage=plan` 非零 tokens，破单调面板 |
-| demo 能现场切 llm 吗？ | `AI_MODE=rules PLAN_MODE=llm npm run run:p0` 一行命令；plan agent 自动读 env 创建 modelClient，无需改代码 |
+| demo 默认就是真实模型吗？ | 是。`npm run run:p0` 已默认 `AI_MODE=llm PLAN_MODE=llm`，clarify 与 plan 阶段都真实调用 `.env` 配置的模型（当前 `deepseek-v4-flash`）；断网应急用 `npm run run:p0:rules` |
 | LLM 输出错误路径怎么办？ | `planWithLlm.assertTargetsExist()` 用 `fs.existsSync` 逐文件校验；任一不存在直接 throw，不回退到规则模板 |
 
-### U4：语义召回
+### U4：历史方案复用（token 重叠召回）
 
 | 问 | 答 |
 |----|-----|
-| 为什么不用 embedding API？ | 离线优先：char bigram + 256 维 hash + L2 归一化 cosine，纯本地零依赖；39 行 embeddings.jsonl 秒级重建 |
-| 语义 vs 关键词哪个准？ | 并集策略：skill_id token 匹配 + cosine top-3 语义去重合并；`match_type=both` 优先排序；演示 run `run-semantic-recall-demo` 输入无 Skill 关键词重叠仍 semantic 命中 |
+| 为什么不用 embedding API？ | 离线优先：char bigram + 256 维 hash + L2 归一化 cosine，纯本地零依赖；39 行 embeddings.jsonl 秒级重建。注意这是 token/bigram 重叠近似，不是语义 embedding，换同义词召回可能失效——答辩定位为「历史方案复用」而非「语义召回」 |
+| token 重叠 vs 关键词哪个准？ | 并集策略：skill_id token 匹配 + bigram cosine top-3 去重合并；`match_type=both` 优先排序；演示 run `run-semantic-recall-demo` 输入无 Skill 关键词重叠但仍有字面 bigram 重叠时可命中 |
 
 ### U5：非文章列表 Skill（commentLikeCount）
 
@@ -163,7 +163,7 @@ npm run scaffold:submission-evidence
 npm run scaffold:u6
 ```
 
-默认输出 `docs/reports/submission/u6-rehearsal-manifest.template.json`。复制或改名为 `u6-rehearsal-manifest.json` 后，把 `REPLACE_WITH_START_ISO` / `REPLACE_WITH_END_ISO` 替换成真实计时时间，并确保对应 run、Skill 文件、registry 注册和录屏文件都已经存在。
+默认输出 `docs/reports/submission/u6-rehearsal-manifest.template.json`。复制或改名为 `u6-rehearsal-manifest.json` 后，把 `REPLACE_WITH_START_ISO` / `REPLACE_WITH_END_ISO` 替换成真实计时时间，并确保对应 run、Skill 文件（放入 `services/skills/src/` 即被目录自动发现，无需改 registry）和录屏文件都已经存在。
 每道题还需保留一份实现改动清单（建议 `git status --short` 或 `git diff --name-only` 的结果），填入 manifest 的 `implementationChangeList` 字段；清单用于证明演练没有改 Orchestrator / Agent / API / Web 主干。
 
 单题审计命令（示例）：
@@ -185,7 +185,7 @@ npm run check:u6 -- \
 npm run check:u6 -- --manifest docs/reports/submission/u6-rehearsal-manifest.json
 ```
 
-该命令只校验本地证据是否齐备：run 目录、`verification.json status=passed`、`run-summary.json status=passed`、非空 diff、Skill 文件、Skill id、registry 注册、实现改动清单、≤15 分钟计时、非空录屏文件，以及 manifest 中 ≥3 道题、≥2 道通过、runId/skillId 不重复。实现改动清单会拒绝 Orchestrator / Agent / API / Web 主干改动，避免把“改主流程”误报成“只新增 Skill 文件”。`scaffold:u6` 只生成待填模板；它不替代真实录屏、人工现场计时或 §8.2 外部提交。
+该命令只校验本地证据是否齐备：run 目录、`verification.json status=passed`、`run-summary.json status=passed`、非空 diff、Skill 文件、Skill id、Skill 文件含 `export const <name>Skill`（供目录自动发现）、实现改动清单、≤15 分钟计时、非空录屏文件，以及 manifest 中 ≥3 道题、≥2 道通过、runId/skillId 不重复。实现改动清单会拒绝 `registry.js` 与 Orchestrator / Agent / API / Web 主干改动，避免把”改主流程”误报成”只新增 Skill 文件”。`scaffold:u6` 只生成待填模板；它不替代真实录屏、人工现场计时或 §8.2 外部提交。
 
 ## 现场题失败兜底
 

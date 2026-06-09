@@ -20,7 +20,7 @@
 cd /Users/xioshark/Desktop/bytedance/bytedance-implementation
 npm install
 npm install --prefix sandbox-repo
-BLOCK_ON_CONFIRM=1 AI_MODE=rules PLAN_MODE=rules npm run dev
+BLOCK_ON_CONFIRM=1 AI_MODE=llm PLAN_MODE=llm npm run dev
 ```
 
 打开：
@@ -48,7 +48,7 @@ npm run test:e2e
 
 ```bash
 cd /Users/xioshark/Desktop/bytedance/bytedance-implementation
-BLOCK_ON_CONFIRM=1 AI_MODE=rules PLAN_MODE=rules npm run dev
+BLOCK_ON_CONFIRM=1 AI_MODE=llm PLAN_MODE=llm npm run dev
 ```
 
 看到 API 和 Web 都启动后，浏览器打开：
@@ -133,7 +133,7 @@ sed -n '1,180p' docs/reports/runs/run-l2-auto-cover-image/plan.md
 sed -n '1,120p' services/skills/src/articleCoverImage.js
 ```
 
-语义召回：
+历史方案复用（token 重叠召回）：
 
 ```bash
 sed -n '1,180p' docs/reports/runs/run-semantic-recall-demo/plan.md
@@ -248,7 +248,7 @@ docs/reports/runs/run-2026-05-21T02-16-15-215Z
 要点：
 
 - 重点说“真实路径、真实 diff、真实验证”。
-- rules 模式 tokens 为 0 是正常的，只用于稳定回放 MVP。
+- 主路径走真实 LLM（`AI_MODE=llm PLAN_MODE=llm`），AI Usage 面板有非零 tokens；`rules` 仅作断网应急兜底，那时 tokens 为 0 属正常。
 
 ---
 
@@ -350,8 +350,8 @@ docs/reports/runs/run-semantic-recall-demo
 
 口播：
 
-> 系统会把历史需求结构化沉淀。新的需求进来时，不只是用关键词匹配 Skill，还会从历史 run 里召回相似方案。  
-> 这条语义召回 demo 里，即使输入没有完全复用旧需求关键词，也能通过 semantic match 找到相似历史需求，并把历史方案写入 plan 的 references。  
+> 系统会把历史需求结构化沉淀。新的需求进来时，不只是用关键词匹配 Skill，还会从历史 run 里复用相似方案。  
+> 这条历史方案复用 demo 里，系统基于需求文本的字符 bigram 重叠度，从历史 run 找到相似度最高的旧需求，并把历史方案写入 plan 的 references；`history-recall.json` 里能看到 `match_type` 和相似度分数。  
 > 这解决的是 PM 需求吞吐问题：类似需求越多，系统越知道之前怎么拆、怎么验证、踩过哪些坑。
 
 要点：
@@ -450,7 +450,7 @@ docs/reports/submission/defense-prep.md
 口播：
 
 > 总结一下，这个项目已经把 PM 自然语言需求接入到真实 Conduit 仓库变更、自动化验证和 PR 草稿，并在澄清、可观测、跨栈一致性、历史召回、断点重放和 Skill 抽象上做了扩展。  
-> 现场演示建议优先走稳定 rules 链路，LLM 能力用已归档 run 和 ai-calls 作为证据，这样既能展示真实能力，也能避免网络波动影响演示。
+> 现场演示主路径走真实 LLM 链路（`AI_MODE=llm PLAN_MODE=llm`，默认即此），展示真实 token / 延迟 / 成本留痕；`rules` 链路仅作断网应急兜底，并已归档 run 和 ai-calls 作为补充证据。
 
 ---
 
@@ -460,7 +460,7 @@ docs/reports/submission/defense-prep.md
 
 > 这个系统解决的是 PM 需求到研发交付之间的翻译成本。PM 在控制台输入自然语言需求后，系统会先澄清边界，再生成方案，定位 Conduit 真实模块，写入 `sandbox-repo`，运行 lint 和单测，最后生成 PR 草稿。  
 > 技术上我把能力拆成 React 控制台、Node API、Orchestrator/Agent/Skill 三层；扩展新需求模式时优先新增 Skill，而不是改主流程。  
-> 加分能力包括多轮澄清、断点重放、跨栈 schema-driven 变更、AI token/延迟/成本面板、历史需求语义召回，以及完整 AI 使用留痕。
+> 加分能力包括多轮澄清、断点重放、跨栈 schema-driven 变更、AI token/延迟/成本面板、基于 token 重叠的历史方案复用，以及完整 AI 使用留痕。
 
 ---
 

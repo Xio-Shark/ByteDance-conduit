@@ -5,3 +5,5 @@ apps/web/dist/
 sandbox-repo/node_modules/
 sandbox-repo/frontend/node_modules/
 sandbox-repo/backend/node_modules/
+output/
+test-results/

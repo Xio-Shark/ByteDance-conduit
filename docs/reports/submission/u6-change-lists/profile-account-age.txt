@@ -1,5 +1,4 @@
 services/skills/src/profileAccountAge.js
-services/skills/src/registry.js
 sandbox-repo/frontend/src/routes/Profile/Profile.jsx
 sandbox-repo/frontend/src/styles.css
 docs/reports/runs/run-u6-profile-account-age/requirement.md

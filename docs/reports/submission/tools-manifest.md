@@ -46,10 +46,10 @@
 
 | 变量 | 典型值 | 说明 |
 |------|--------|------|
-| `AI_MODE` | `rules` / `llm` | 必须显式设置；代码级 P0 用 rules，§2.2 澄清验收用 llm |
-| `PLAN_MODE` | `rules` / `llm` | 默认 rules；U3 / 可观测性演示用 llm，`target_files` 不存在时 fail-fast |
-| `LLM_MODEL` | `mimo-v2.5` | U2 多轮 clarify 与 U3 plan 阶段验收 run |
-| `LLM_BASE_URL` | OpenAI 兼容网关 | 仅本地 `.env`，不入库 |
+| `AI_MODE` | `llm` / `rules` | 默认 `llm`（答辩主路径，真实模型调用）；`rules` 为断网应急兜底，tokens 为 0 |
+| `PLAN_MODE` | `llm` / `rules` | 默认 `llm`；plan 阶段真实 LLM 调用并留痕非零 tokens，`target_files` 不存在时 fail-fast |
+| `LLM_MODEL` | `deepseek-v4-flash` | clarify 与 plan 阶段真实模型调用 |
+| `LLM_BASE_URL` | `https://api.deepseek.com`（OpenAI 兼容网关） | 仅本地 `.env`，不入库 |
 | `SANDBOX_REPO_PATH` | `sandbox-repo/` | Conduit fork 路径 |
 
 ---
@@ -58,7 +58,7 @@
 
 ```bash
 cd bytedance-implementation
-npm run verify    # 本地代码门禁：npm test 524 项（523 pass / 1 skip）+ sandbox lint + Conduit Vitest + web build
+npm run verify    # 本地代码门禁：npm test 527 项（526 pass / 1 skip）+ sandbox lint + Conduit Vitest + web build
 npm run check:public-repo -- --repo <fresh-clone-path>
 npm run scaffold:submission-evidence
 npm run check:video-evidence
@@ -66,9 +66,9 @@ npm run check:defense-rehearsal
 npm run check:submission-gates -- --public-repo <fresh-clone-path>
 npm run scaffold:u6
 npm run check:u6 -- --manifest docs/reports/submission/u6-rehearsal-manifest.json
-npm run run:p0:rules
+npm run run:p0          # 默认 llm 主路径（真实模型）
 npm run run:fuzzy-llm
-PLAN_MODE=llm npm run run:p0
+npm run run:p0:rules    # 断网应急兜底
 ```
 
 ---

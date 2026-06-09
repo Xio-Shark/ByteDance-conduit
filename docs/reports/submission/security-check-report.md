@@ -103,7 +103,7 @@ cd bytedance-implementation && npm run verify
 
 | 环节 | 2026-06-01 结果（submission readiness 复跑） |
 |------|-----------------|
-| Node/API/Web/scripts 测试 | **524 tests；523 pass / 1 skip** |
+| Node/API/Web/scripts 测试 | **527 tests；526 pass / 1 skip** |
 | sandbox lint | passed |
 | Conduit Vitest | 12 passed |
 | Web build | passed |
@@ -126,7 +126,7 @@ cd bytedance-implementation && npm run check:submission-gates -- --public-repo <
 
 - [x] `git status` 无 `.env` staged（2026-05-21 复跑）
 - [x] 源码/材料 `rg` 无 `sk-` / `ghp_` 明文（2026-05-21 复跑）
-- [x] `npm run verify` / 本地门禁全绿（`npm test` 524 项；523 pass / 1 skip + sandbox lint + Conduit Vitest 12 项 + web build）
+- [x] `npm run verify` / 本地门禁全绿（`npm test` 527 项；526 pass / 1 skip + sandbox lint + Conduit Vitest 12 项 + web build）
 - [x] `npm run archive:dry-run` 通过（2026-06-06；候选包内容检查，不等于远端公开；475 files / 12 key runs，`manifestHash=c290b7e6e6cd6e2be0ddfbcd71b70c4dc086fe87a5f105cd05b3b4bad4e609d6`，`contentHash` 以最新 dry-run 输出为准）
 - [ ] `npm run check:submission-gates -- --public-repo <fresh-clone-path>` 通过（2026-06-06 复跑仍 failed；archive、U6、Q&A rehearsal 与 fresh clone public repo check 已通过；剩余 blocker 为本地视频证据、external submission evidence、pre-submission gate 中的 Git tracking / final materials / video / external 证据）
 - [ ] `PUBLIC_REPO_CLONE_PATH=<fresh-clone-path> bash scripts/pre-submission-check.sh` 通过（当前会先运行 archive dry-run，再聚合报告：公开发布清单路径未全部纳入 Git 跟踪、关键源码 / run / submission / sandbox 发布路径仍未准备成 tracked public repository、最终 external submission checklist 未完成、本地视频证据缺失或不完整、外部提交证据 JSON 缺失或不完整；readiness 失败后不会继续跑 `npm run verify`；发布当天填完并确认清单后再勾）

@@ -20,7 +20,7 @@ test("public repo check passes for a complete fresh clone", async () => {
     assert.equal(result.summary.status, "passed");
     assert.deepEqual(result.summary.checkCounts, countChecks(result.summary.checks));
     assert.equal(result.summary.requiredPathCount, 12);
-    assert.equal(result.summary.submissionPlaceholderFileCount, 3);
+    assert.equal(result.summary.submissionPlaceholderFileCount, 2);
     assert.equal(result.summary.secretScannedFileCount, 14);
     assert.equal(result.summary.checks.some((check) => check.name === "required-paths"), true);
     assert.equal(result.summary.checks.some((check) => check.name === "required:README.md"), false);
@@ -263,8 +263,12 @@ async function writeSubmission(repoRoot, options) {
     ? "https://example.com/repo"
     : "https://github.com/conduit-delivery/conduit-super-individual";
   await writeText(repoRoot, "docs/reports/submission/team-info.md", `| URL | ${status} |\n`);
-  await writeText(repoRoot, "docs/reports/submission/checklist.md", "- [x] 6.10 前对外提交\n");
-  await writeText(repoRoot, "docs/reports/submission/public-repo-guide.md", `| 远端公开 URL | ${repoUrl} |\n`);
+  await writeText(repoRoot, "docs/reports/submission/checklist.md", options.placeholder
+    ? "- [ ] 6.10 前对外提交\n"
+    : "- [x] 6.10 前对外提交\n");
+  await writeText(repoRoot, "docs/reports/submission/public-repo-guide.md", options.placeholder
+    ? "| 远端公开 URL | 待发布 |\n"
+    : `| 远端公开 URL | ${repoUrl} |\n`);
 }
 
 async function writeJson(repoRoot, relativePath, value) {

@@ -43,7 +43,7 @@ cd bytedance-implementation && npm run verify
 
 | 环节 | 结果 |
 |------|------|
-| 实现仓 Node/API/Web/scripts 测试 524 项（523 pass / 1 skip） | ✅ pass |
+| 实现仓 Node/API/Web/scripts 测试 527 项（526 pass / 1 skip） | ✅ pass |
 | sandbox lint | ✅ pass |
 | Conduit Vitest 12 项 | ✅ pass |
 | Web 生产构建 | ✅ pass |

@@ -1,5 +1,4 @@
 services/skills/src/commentDraftCounter.js
-services/skills/src/registry.js
 sandbox-repo/frontend/src/components/CommentEditor/CommentEditor.jsx
 sandbox-repo/frontend/src/styles.css
 docs/reports/runs/run-u6-comment-draft-counter/requirement.md

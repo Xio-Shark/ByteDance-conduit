@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 const PROJECT_ROOT = process.env.U6_PROJECT_ROOT
   ? path.resolve(process.env.U6_PROJECT_ROOT)
   : fileURLToPath(new URL("..", import.meta.url));
+// Auto-discovery registers Skills by directory scan; editing the registry to
+// add a Skill contradicts the "only one new file" claim, so it is disallowed.
 const REGISTRY_PATH = "services/skills/src/registry.js";
 
 export async function checkImplementationChangeList(options) {
@@ -21,16 +23,20 @@ export async function checkImplementationChangeList(options) {
     return fail("implementation-change-list", `missing required Skill-layer path(s): ${missingRequired.join(", ")}`);
   }
 
+  if (paths.includes(REGISTRY_PATH)) {
+    return fail("implementation-change-list", `must not edit ${REGISTRY_PATH}; Skills are auto-discovered, adding a mode is one file only`);
+  }
+
   const disallowed = paths.filter((relativePath) => !isAllowedChange(relativePath, options));
   if (disallowed.length) {
     return fail("implementation-change-list", `disallowed mainline change(s): ${disallowed.join(", ")}`);
   }
 
-  return pass("implementation-change-list", `${paths.length} path(s); no Agent/Orchestrator/API/Web mainline changes`);
+  return pass("implementation-change-list", `${paths.length} path(s); Skill auto-discovered, no registry/Agent/Orchestrator/API/Web mainline changes`);
 }
 
 function requiredPaths(options) {
-  return new Set([normalizeProjectPath(options.skillFile), REGISTRY_PATH]);
+  return new Set([normalizeProjectPath(options.skillFile)]);
 }
 
 function isAllowedChange(relativePath, options) {

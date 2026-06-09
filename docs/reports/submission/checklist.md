@@ -19,7 +19,7 @@
 - [x] **#2 断点重放**（H5–H7）：`resume-from-stage`；plan 后改输入，只重跑 edit→verify→pr
 - [x] **#3 跨栈一致性**（H10–H11 + U1）：`run-l2-auto-cover-image` schema-driven 自动驱动 6 文件 diff；老 L2 exemplar 保留
 - [x] **#4 可观测性**（H4,H13 + U3）：§2.2 验收口径 LLM run 非零 tokens；`run-plan-llm-driven` 含 `stage=plan` 非零 tokens；Web 面板可展示
-- [x] **#5 业务上下文反哺**（H8–H9 + U4）：相似 run 召回 **写入 plan**；`run-semantic-recall-demo` 含 `match_type=semantic` 和 `similarity_score`
+- [x] **#5 业务上下文反哺**（H8–H9 + U4）：相似 run 召回 **写入 plan**（token/bigram 重叠近似，非语义 embedding）；`run-semantic-recall-demo` 含 `match_type=semantic` 字段和 `similarity_score`
 - [x] **#6 澄清深度**（H4 + U2）：**故意模糊**输入 + 真实 LLM 主动追问；`run-l3-multi-turn-clarify` 证明 PM 答复后 LLM refine（清晰 L1 原句 run **不计入**）
 
 > 上述勾选只代表代码 / run 证据已归档；最终评判仍需 S7 演示视频逐项展示六项。
@@ -52,7 +52,7 @@
 
 ## 工程验证
 
-- [x] **H14**：`npm test` 通过（524 项 Node/API/Web/scripts 测试；523 pass / 1 skip），`lint:sandbox`、Conduit Vitest 12 项和 Web build 已复核通过；只证明本地代码门禁，不勾选 §8.2 对外交付
+- [x] **H14**：`npm test` 通过（527 项 Node/API/Web/scripts 测试；526 pass / 1 skip），`lint:sandbox`、Conduit Vitest 12 项和 Web build 已复核通过；只证明本地代码门禁，不勾选 §8.2 对外交付
 - [x] submission readiness API 会把 Demo/视频/公开仓占位和未勾选最终提交项标为 `pending_human`
 - [x] `npm run archive:dry-run` 通过：候选发布包可枚举关键源码、submission 材料、四类 evidence 模板、`sandbox-repo/`、脚本测试与 12 条关键 run（2026-06-06 复跑：475 files；`manifestHash=c290b7e6e6cd6e2be0ddfbcd71b70c4dc086fe87a5f105cd05b3b4bad4e609d6`；`contentHash` 以最新 dry-run 输出为准，状态文档写入会改变内容哈希）；排除 `.env`、`node_modules`、Web build 产物、测试结果目录和 `runs-archive`
 - [x] `npm run check:public-repo -- --repo <fresh-clone-path>` 已接入：发布后可校验 fresh clone 的 required 路径、关键 run、submission 占位、禁入路径、常见 secret 模式、保留示例域名 / 模板替换 token / 示例路径段和 Git clean 状态；不创建或证明远端 URL

@@ -1,0 +1,20 @@
+{
+  "stage": "failed",
+  "status": "failed",
+  "retryOf": null,
+  "confirmations": [],
+  "events": [
+    {
+      "at": "2026-06-09T14:24:59.497Z",
+      "stage": "clarifying",
+      "message": "Build requirement card"
+    },
+    {
+      "at": "2026-06-09T14:24:59.501Z",
+      "stage": "failed",
+      "message": "Command failed without numeric exit code"
+    }
+  ],
+  "checkpoints": {},
+  "prSubmission": null
+}

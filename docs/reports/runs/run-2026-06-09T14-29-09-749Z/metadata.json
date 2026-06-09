@@ -1,0 +1,20 @@
+{
+  "stage": "failed",
+  "status": "failed",
+  "retryOf": null,
+  "confirmations": [],
+  "events": [
+    {
+      "at": "2026-06-09T14:29:09.750Z",
+      "stage": "clarifying",
+      "message": "Build requirement card"
+    },
+    {
+      "at": "2026-06-09T14:29:09.777Z",
+      "stage": "failed",
+      "message": "LLM_API_KEY is required when AI_MODE=llm"
+    }
+  ],
+  "checkpoints": {},
+  "prSubmission": null
+}

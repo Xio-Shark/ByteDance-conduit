@@ -1,0 +1,23 @@
+{
+  "runId": "run-2026-06-09T14-24-59-334Z",
+  "stage": "failed",
+  "status": "failed",
+  "error": "Command failed without numeric exit code",
+  "repoPath": "/Users/xioshark/Desktop/bytedance/bytedance-implementation/apps/api/sandbox-repo",
+  "evidenceDir": "/Users/xioshark/Desktop/bytedance/bytedance-implementation/docs/reports/runs/run-2026-06-09T14-24-59-334Z",
+  "events": [
+    {
+      "at": "2026-06-09T14:24:59.335Z",
+      "stage": "clarifying",
+      "message": "Build requirement card"
+    },
+    {
+      "at": "2026-06-09T14:24:59.340Z",
+      "stage": "failed",
+      "message": "Command failed without numeric exit code"
+    }
+  ],
+  "checkpoints": {},
+  "aiCalls": null,
+  "aiUsage": null
+}

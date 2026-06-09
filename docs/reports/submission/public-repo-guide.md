@@ -200,4 +200,4 @@ PUBLIC_REPO_CLONE_PATH=<fresh-clone-path> bash scripts/pre-submission-check.sh
 | `npm run check:public-repo -- --repo <fresh-clone-path>` | 🟡 脚本已接入；本轮已对 fresh clone 执行，需以最新推送后的复跑结果为准 |
 | `npm run check:submission-gates -- --public-repo <fresh-clone-path>` | 🟡 脚本已接入；统一汇总本地/远端证据 gate，输出 `openPlanItems` / `planItems` / `requiredEvidence`，真实证据未齐时应失败 |
 | `sandbox-repo/` 在公开仓 | ✅ fresh clone 已确认 `sandbox-repo/frontend/src/components/ArticlesPreview/ArticlesPreview.jsx` 等真实源码文件存在 |
-| `npm run verify` | ✅ 本地代码门禁已复核：`npm test` 524 项（523 pass / 1 skip）+ sandbox lint + Conduit Vitest 12 项 + Web build |
+| `npm run verify` | ✅ 本地代码门禁已复核：`npm test` 527 项（526 pass / 1 skip）+ sandbox lint + Conduit Vitest 12 项 + Web build |
