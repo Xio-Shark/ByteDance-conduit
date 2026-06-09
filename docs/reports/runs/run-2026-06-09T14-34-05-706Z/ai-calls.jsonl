@@ -1,0 +1,1 @@
+{"stage":"clarify","model":"mimo-v2.5-pro","prompt_version":"2.0.0-llm","input_summary":"给 Popular Tags 侧边栏前 5 个标签打醒目标记。","output_summary":"decision=clarify; pending=Q1","tokens_in":400,"tokens_out":1512,"latency_ms":58802,"cost_estimate":0.003824,"status":"completed"}

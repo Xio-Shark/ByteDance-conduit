@@ -13,8 +13,8 @@ export async function writeRehearsalEvidence(projectRoot, options = {}) {
   await mkdir(path.join(projectRoot, "docs/reports/submission/u6-change-lists"), { recursive: true });
   await mkdir(runDir, { recursive: true });
 
-  await writeFile(path.join(projectRoot, "services/skills/src/commentDraftCounter.js"), "export const commentDraftCounterSkill = { id: 'comment-draft-counter' };\n");
-  await writeFile(path.join(projectRoot, "services/skills/src/registry.js"), registryText(options.registerSkill));
+  await writeFile(path.join(projectRoot, "services/skills/src/commentDraftCounter.js"), skillFileText(options.skipSkillExport));
+  await writeFile(path.join(projectRoot, "services/skills/src/registry.js"), autoDiscoveryRegistryText());
   await writeFile(path.join(projectRoot, "docs/reports/submission/u6-recordings/comment-counter.mp4"), "video bytes\n");
   if (!options.skipChangeList) {
     await writeFile(path.join(projectRoot, "docs/reports/submission/u6-change-lists/comment-counter.txt"), changeListText(options.changeListPaths ?? singleChangeList()));
@@ -53,16 +53,20 @@ export async function writeManifestEvidence(projectRoot, options = {}) {
   return manifestPath;
 }
 
-function registryText(registerSkill) {
-  return registerSkill === false
-    ? "const SKILLS = Object.freeze([]);\n"
-    : "import { commentDraftCounterSkill } from './commentDraftCounter.js';\nconst SKILLS = Object.freeze([commentDraftCounterSkill]);\n";
+function skillFileText(skipSkillExport) {
+  return skipSkillExport === true
+    ? "export function applyCommentDraftCounter(sandbox) { return sandbox; }\n"
+    : "export const commentDraftCounterSkill = { id: 'comment-draft-counter' };\nexport function applyCommentDraftCounter(sandbox) { return sandbox; }\n";
+}
+
+// Auto-discovery registry: scans the directory, never hardcodes module names.
+function autoDiscoveryRegistryText() {
+  return "import { readdir } from 'node:fs/promises';\nconst SKILLS = Object.freeze([]);\n";
 }
 
 function singleChangeList() {
   return [
     "services/skills/src/commentDraftCounter.js",
-    "services/skills/src/registry.js",
     "docs/reports/runs/run-u6-demo/requirement.md",
     "docs/reports/runs/run-u6-demo/plan.md",
     "docs/reports/runs/run-u6-demo/diff.patch",
@@ -94,11 +98,10 @@ function manifestRehearsal(title, runId, skillId, moduleName, recordingFile) {
   };
 }
 
-function registryManifestText(rehearsals) {
-  return [
-    ...rehearsals.map((rehearsal) => `import { ${rehearsal.exportName} } from './${rehearsal.moduleName}.js';`),
-    `const SKILLS = Object.freeze([${rehearsals.map((rehearsal) => rehearsal.exportName).join(", ")}]);`,
-  ].join("\n");
+// Auto-discovery registry never names individual Skill modules; the manifest
+// rehearsals are registered purely by being present in the directory.
+function registryManifestText() {
+  return "import { readdir } from 'node:fs/promises';\nconst SKILLS = Object.freeze([]);\n";
 }
 
 function manifestJson(rehearsals, slowRunIds) {
@@ -138,7 +141,6 @@ async function writeManifestRehearsal(projectRoot, rehearsal) {
 function manifestChangeList(rehearsal) {
   return [
     rehearsal.skillFile,
-    "services/skills/src/registry.js",
     `docs/reports/runs/${rehearsal.runId}/requirement.md`,
     `docs/reports/runs/${rehearsal.runId}/plan.md`,
     `docs/reports/runs/${rehearsal.runId}/diff.patch`,

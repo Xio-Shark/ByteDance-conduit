@@ -15,11 +15,11 @@
 | 难点 | 解决方案 | 对应证据 |
 |------|----------|----------|
 | Conduit 真实仓库写入 | `ConduitSandbox` 限制路径与 git origin，所有改动写入 `sandbox-repo/` | `diff.patch`、`verification.json` |
-| 新需求模式不改主干 | 6 个 Skill + registry；planSummary / validation / crossStackCheck 下沉到 Skill 元数据 | `services/skills/src/*`、`registry.js` |
+| 新需求模式不改主干 | 9 个 Skill；`registry.js` 目录自动发现，planSummary / validation / crossStackCheck 下沉到 Skill 元数据；新增模式只 git add 一个文件 | `services/skills/src/*`、`registry.js` |
 | 跨栈字段同步 | U1 `schemaChange` → `schemaDriver` + `frontendGenerators` 自动推断 backend/frontend 目标 | `run-l2-auto-cover-image` |
 | 模糊需求不硬编 | U2 多轮 LLM clarify，pending questions 持久化，PM 回答后 refine | `run-l3-multi-turn-clarify` |
 | 可观测与合规 | `ai-calls.jsonl` 记录 prompt_version、tokens、latency、cost；Web 面板展示 | `run-plan-llm-driven`、AI Usage panel |
-| 历史上下文反哺 | token + semantic recall 并集，plan 写入 `history_references` | `run-semantic-recall-demo` |
+| 历史上下文反哺 | token 重叠 + bigram cosine 并集（非语义 embedding），plan 写入 `history_references` | `run-semantic-recall-demo` |
 
 ## 难点 1：真实仓库写入
 
@@ -45,9 +45,9 @@ Skill 声明 `schemaChange={model, field, type, op}`，`services/codegen/schemaD
 
 移除 `rejectUnsupportedPlanMode`；`planWithLlm.js` 输入 requirementCard + sandbox index + history，由 `mimo-v2.5` 输出 `target_files + impacted_modules + risks + reasoning`；LLM 输出 target_files 必须存在于 sandbox（fail-fast 不用 fallback）；plan.ai_call 合并入 `ai-calls.jsonl`（`stage=plan`，非零 tokens）。演示证据：`run-plan-llm-driven` ai-calls 含 stage=plan 行（1042/1590 tokens），`plan.md source=llm-driven`。
 
-## 难点 7：语义历史召回（U4）
+## 难点 7：历史方案复用（U4，token 重叠召回）
 
-`services/index/src/embeddingIndex.js` 实现 character bigram + 256 维 hash + L2 归一化 cosine（纯本地，无外部依赖）；`embeddings.jsonl` 一行一 passed run（vector + meta）；`historyRecall.js` 合并 token 重叠 + semantic 并集（`match_type=semantic|skill_id|both`），`plan.history_references` 每条含 `similarity_score`。演示证据：`run-semantic-recall-demo` 输入无 Skill 关键词重叠仍 semantic 命中 word-count 老 run。
+`services/index/src/embeddingIndex.js` 实现 character bigram + 256 维 hash + L2 归一化 cosine（纯本地，无外部依赖）；`embeddings.jsonl` 一行一 passed run（vector + meta）；`historyRecall.js` 合并 token 重叠 + bigram cosine 并集（`match_type=semantic|skill_id|both`），`plan.history_references` 每条含 `similarity_score`。**口径诚实说明**：这是字面 bigram 重叠的近似匹配，不是语义 embedding——换同义词表述可能召回失败，答辩定位为「历史方案复用」而非「语义召回」。演示证据：`run-semantic-recall-demo` 输入无 Skill 关键词重叠但仍有字面 bigram 重叠时可命中 word-count 老 run。
 
 ## 难点 8：归档治理（R1）
 
@@ -59,7 +59,7 @@ API 冷启动从 `docs/reports/runs/<run-id>` 恢复；`metadata.json` 持久化
 
 ## 难点 10：业务上下文反哺
 
-`historyRecall` 扫描落盘 evidence；不完整归档 → `degraded` + `skipped`。Planning Agent 将匹配写入 **`plan.history_references`**（H8–H9）。U4 后语义召回与 token 召回取并集，每条引用带 `match_type` 与 `similarity_score`。
+`historyRecall` 扫描落盘 evidence；不完整归档 → `degraded` + `skipped`。Planning Agent 将匹配写入 **`plan.history_references`**（H8–H9）。U4 后 bigram cosine 与 token 召回取并集，每条引用带 `match_type` 与 `similarity_score`。
 
 ## 难点 11：AI 双路径与可观测
 

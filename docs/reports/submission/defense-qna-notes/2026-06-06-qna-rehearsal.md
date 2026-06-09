@@ -61,7 +61,7 @@ Evidence:
 
 Question: Why is history recall more than keyword matching?
 
-Answer summary: The index uses local embeddings based on character bigrams and cosine similarity, then merges semantic and token matches. `run-semantic-recall-demo` demonstrates semantic recall being injected into planning evidence even when the user phrasing does not directly name the same skill. This is local and deterministic enough for offline review.
+Answer summary: The index uses a local character-bigram hash vector with cosine similarity, then merges that with skill_id token matching. This is literal token/bigram overlap, not semantic embedding — we frame it honestly as "history-plan reuse" rather than "semantic recall", since rephrasing with synonyms can miss. `run-semantic-recall-demo` shows history references injected into the generated plan when there is bigram overlap even without exact skill-keyword reuse. It is local and deterministic enough for offline review.
 
 Evidence:
 - `services/index/src/embeddingIndex.js`

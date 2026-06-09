@@ -110,16 +110,16 @@ test("U6 rehearsal check fails when verification did not pass", async () => {
   }
 });
 
-test("U6 rehearsal check fails when the Skill is not registered", async () => {
+test("U6 rehearsal check fails when the Skill file lacks a Skill export", async () => {
   const projectRoot = await makeProjectRoot("u6-unregistered-");
 
   try {
-    await writeRehearsalEvidence(projectRoot, { registerSkill: false });
+    await writeRehearsalEvidence(projectRoot, { skipSkillExport: true });
     const result = await runCheck(projectRoot);
 
     assert.equal(result.code, 1);
     assert.equal(result.summary.status, "failed");
-    assert.match(JSON.stringify(result.summary.checks), /registry must import/);
+    assert.match(JSON.stringify(result.summary.checks), /directory auto-discovery/);
   } finally {
     await rm(projectRoot, { force: true, recursive: true });
   }
@@ -147,7 +147,6 @@ test("U6 rehearsal check fails when the implementation change list touches mainl
     await writeRehearsalEvidence(projectRoot, {
       changeListPaths: [
         "services/skills/src/commentDraftCounter.js",
-        "services/skills/src/registry.js",
         "services/orchestrator/src/deliveryPipeline.js",
         "docs/reports/runs/run-u6-demo/requirement.md",
         "docs/reports/runs/run-u6-demo/plan.md",
@@ -163,6 +162,33 @@ test("U6 rehearsal check fails when the implementation change list touches mainl
     assert.equal(result.code, 1);
     assert.equal(result.summary.status, "failed");
     assert.match(JSON.stringify(result.summary.checks), /disallowed mainline change/);
+  } finally {
+    await rm(projectRoot, { force: true, recursive: true });
+  }
+});
+
+test("U6 rehearsal check fails when the change list edits the registry", async () => {
+  const projectRoot = await makeProjectRoot("u6-registry-edit-");
+
+  try {
+    await writeRehearsalEvidence(projectRoot, {
+      changeListPaths: [
+        "services/skills/src/commentDraftCounter.js",
+        "services/skills/src/registry.js",
+        "docs/reports/runs/run-u6-demo/requirement.md",
+        "docs/reports/runs/run-u6-demo/plan.md",
+        "docs/reports/runs/run-u6-demo/diff.patch",
+        "docs/reports/runs/run-u6-demo/verification.json",
+        "docs/reports/runs/run-u6-demo/run-summary.json",
+        "docs/reports/submission/u6-recordings/comment-counter.mp4",
+        "docs/reports/submission/u6-change-lists/comment-counter.txt",
+      ],
+    });
+    const result = await runCheck(projectRoot);
+
+    assert.equal(result.code, 1);
+    assert.equal(result.summary.status, "failed");
+    assert.match(JSON.stringify(result.summary.checks), /must not edit .*registry/);
   } finally {
     await rm(projectRoot, { force: true, recursive: true });
   }

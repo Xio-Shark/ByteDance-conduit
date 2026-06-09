@@ -37,7 +37,7 @@ PM
 | `services/agents` | 需求/计划/编码/验证/PR；rules + **`clarifyWithLlm`** + **U2 `proposeClarifications`/`refineWithAnswers`** + **U3 `planWithLlm`** | ✅ H3–H4 + U2 + U3 |
 | `services/skills` | **6 个 Skill**（L1 阅读量、L2 草稿、详情字数、Popular Tags 前 5、**U1 `article-cover-image` schema-driven ≤30 行**、**U5 `comment-like-count` 非列表 ≤50 行**） | ✅ H10–H12 + U1 + U5 |
 | `services/codegen` | **U1**：`schemaDriver` 解析 Sequelize → FieldChangeSet；`frontendGenerators` 输出 TS/service/mock | ✅ U1 |
-| `services/index` | sandbox 文件索引 + **U4 `embeddingIndex`**（char bigram + 256 维 hash + cosine 语义召回） | ✅ H8 + U4 |
+| `services/index` | sandbox 文件索引 + **U4 `embeddingIndex`**（char bigram + 256 维 hash + cosine 的 token 重叠召回，非语义 embedding） | ✅ H8 + U4 |
 | `apps/api` | run routes 聚合 + `runExecutionRoutes` / `runEvidenceRoutes` / `runReviewRoutes` / **U2 `runClarificationRoutes`**（`answer-clarification` + `clarification-history`） | ✅ H6 + U2 |
 | `services/sandbox` | Conduit 读写、git、npm | ✅ |
 | `external/git-provider` | GitHub draft PR | ✅ 契约；H17 远端 PR 为可选项 |
@@ -46,7 +46,7 @@ PM
 
 | 扩展点 | 接入方式 | 主干约束 |
 |--------|----------|----------|
-| 新需求模式 | 新增 `services/skills/src/<skill>.js` 并在 `registry.js` 注册 | 不改 Orchestrator / Agent 主流程 |
+| 新需求模式 | 新增 `services/skills/src/<skill>.js`（导出 `<name>Skill` + `apply<Name>`）；`registry.js` 目录自动发现，无需手动注册 | 不改 registry / Orchestrator / Agent 主流程 |
 | 新 schema 字段类需求 | Skill 声明 `schemaChange`，由 `schemaDriver` 和 `frontendGenerators` 推断目标文件 | Skill 不手写跨栈 targetPaths |
 | 新跨栈检查 | Skill 声明 `crossStackCheck`，Verification Agent 按声明触发 | 不在 verifier 内按 skill id 写分支 |
 | 新 AI 阶段调用 | 产出结构化 `ai_call`，由 orchestrator 合并进 `ai-calls.jsonl` | 不补造 tokens / latency / cost |
@@ -68,15 +68,15 @@ PM
 
 | 路径 | 用途 | 状态 |
 |------|------|------|
-| `AI_MODE=rules` | 代码级 P0；`rules-first-p0` | ✅ |
-| `AI_MODE=llm` | §2.2 模糊澄清；`mimo-v2.5` | ✅ `run-2026-05-21T05-58-01-181Z`；U2 多轮 run `run-l3-multi-turn-clarify` |
-| `PLAN_MODE=llm` | §2.2 可观测性与 plan 推理；`mimo-v2.5` | ✅ `run-plan-llm-driven` |
+| `AI_MODE=llm`（默认，答辩主路径） | clarify 阶段真实模型调用；当前默认 `deepseek-v4-flash`，历史验收 run 用 `mimo-v2.5` | ✅ `run-2026-05-21T05-58-01-181Z`；U2 多轮 run `run-l3-multi-turn-clarify` |
+| `PLAN_MODE=llm`（默认） | plan 阶段真实模型推理与可观测性；当前默认 `deepseek-v4-flash`，历史验收 run 用 `mimo-v2.5` | ✅ `run-plan-llm-driven` |
+| `AI_MODE=rules` | 断网应急兜底；`rules-first-p0`，tokens 为 0 | ✅ |
 
 清晰 L1 的 legacy doubao run **不计入** §2.2 #6。
 
 ## 历史上下文
 
-`historyRecall.js` 扫描 `requirement.md` / `plan.md`；坏归档标 `degraded` / `skipped`（H1–H2）。plan 阶段写入 **`history_references`**（H8–H9）。U4 后增加 `embeddingIndex` 本地语义召回，`history_references` 带 `match_type` 与 `similarity_score`。
+`historyRecall.js` 扫描 `requirement.md` / `plan.md`；坏归档标 `degraded` / `skipped`（H1–H2）。plan 阶段写入 **`history_references`**（H8–H9）。U4 后增加 `embeddingIndex` 本地 token 重叠召回（char bigram + hash 向量，非语义 embedding），`history_references` 带 `match_type` 与 `similarity_score`。
 
 ## 可观测性
 

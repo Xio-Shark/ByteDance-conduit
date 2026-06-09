@@ -9,6 +9,7 @@ const PROJECT_ROOT = process.env.U6_PROJECT_ROOT
   ? path.resolve(process.env.U6_PROJECT_ROOT)
   : fileURLToPath(new URL("..", import.meta.url));
 const NOTE = "This validates local U6 rehearsal evidence only; it does not prove public submission, remote URLs, or real-time recording authenticity.";
+const SKILL_EXPORT_PATTERN = /export\s+const\s+\w+Skill\b/u;
 
 export async function checkManifest(manifestPath) {
   const manifest = JSON.parse(await readRequiredProjectText(manifestPath));
@@ -163,15 +164,22 @@ async function checkSkillFile(options) {
 }
 
 async function checkSkillRegistry(options) {
+  const normalized = normalizeProjectPath(options.skillFile);
+  if (!normalized.startsWith("services/skills/src/") || !normalized.endsWith(".js")) {
+    return fail("skill-registry", "skill file must live under services/skills/src/ to be auto-discovered");
+  }
+  const skillFileText = await readProjectText(options.skillFile);
+  if (skillFileText === null) return fail("skill-registry", `missing skill file ${normalized}`);
+  if (!SKILL_EXPORT_PATTERN.test(skillFileText)) {
+    return fail("skill-registry", "skill file must `export const <name>Skill` so directory auto-discovery registers it");
+  }
   const registry = await readProjectText("services/skills/src/registry.js");
   if (registry === null) return fail("skill-registry", "missing services/skills/src/registry.js");
-  const skillModule = path.posix.basename(normalizeProjectPath(options.skillFile), ".js");
-  const importPattern = new RegExp(`["']\\./${escapeRegExp(skillModule)}\\.js["']`, "u");
-  const moduleReferenceCount = countOccurrences(registry, skillModule);
-  if (!importPattern.test(registry) || moduleReferenceCount < 2) {
-    return fail("skill-registry", `registry must import ./${skillModule}.js and include it in SKILLS`);
+  const skillModule = path.posix.basename(normalized, ".js");
+  if (countOccurrences(registry, skillModule) > 0) {
+    return fail("skill-registry", `registry must not hardcode ${skillModule}; auto-discovery registers Skills without mainline edits`);
   }
-  return pass("skill-registry", `registered ${options.skillId} via ${skillModule}.js`);
+  return pass("skill-registry", `${options.skillId} auto-discovered via ${skillModule}.js (no registry edit)`);
 }
 
 async function checkRecording(options) {
@@ -303,8 +311,4 @@ function countChecks(checks) {
 
 function countOccurrences(text, value) {
   return text.split(value).length - 1;
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

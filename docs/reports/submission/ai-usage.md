@@ -6,15 +6,16 @@
 
 | 层级 | 状态 | 说明 |
 |------|------|------|
-| **代码级 P0** | 已实现 | `AI_MODE=rules`（`rules-first-p0`）跑通澄清 → Conduit 写入 → lint/单测 → PR 草稿 |
+| **答辩主路径** | 已实现 | 默认 `AI_MODE=llm PLAN_MODE=llm`（`deepseek-v4-flash`）跑通澄清 → Conduit 写入 → lint/单测 → PR 草稿，clarify + plan 均真实调用模型并留痕非零 tokens |
+| **断网应急** | 已实现 | `AI_MODE=rules`（`rules-first-p0`）本地规则兜底，tokens 为 0，仅在无网络时使用，非答辩主路径 |
 | **课题完成** | **部分完成** | §2.2 代码与验收 run 已闭合，U1–U5 优秀档升级 run 已归档；§8.2 视频/公开 AI 系统主仓（内含 `sandbox-repo/`）/Demo URL 待人工提交 |
 
-实现仓支持显式 `AI_MODE=rules` 与 `AI_MODE=llm`（`clarifyWithLlm` + `LLM_*` 环境变量）；缺 `AI_MODE` 直接失败。**§2.2 #4/#6 不可降级**；答辩前须归档符合验收口径的 LLM run（见文档仓 [`06-plan` H3–H4](../../../../docs/06-plan.md#冲刺关键路径进度-ssot)）。
+实现仓支持显式 `AI_MODE=rules` 与 `AI_MODE=llm`（`clarifyWithLlm` + `LLM_*` 环境变量）；缺 `AI_MODE` 直接失败。**§2.2 #4/#6 不可降级**；默认链路已切换到真实 LLM（`deepseek-v4-flash`），clarify + plan 均产出符合验收口径的非零 tokens 留痕。
 
 | 模式 | 标识 | 用途 | 状态 |
 |------|------|------|------|
-| 规则澄清 | `rules-first-p0` | Requirement / clarify：结构化需求卡片；tokens/延迟/成本为 0 | ✅ 已验收（最新 P0 run） |
-| 真实 LLM 澄清 | `AI_MODE=llm` + `.env` 中 `LLM_MODEL` 等 | clarify 阶段调用远端模型；须非零 tokens 留痕 | ✅ 已验收（`run-2026-05-21T05-58-01-181Z`） |
+| 真实 LLM（默认） | `AI_MODE=llm` + `.env` 中 `LLM_MODEL` 等 | clarify + plan 阶段调用远端模型；非零 tokens 留痕 | ✅ 答辩主路径（默认 `deepseek-v4-flash`） |
+| 规则兜底（应急） | `rules-first-p0` | 断网时 Requirement / clarify 结构化需求卡片；tokens/延迟/成本为 0 | ✅ 仅作断网应急 |
 | 早期探索（legacy） | `run-2026-05-20T17-37-55-856Z` 等 `aiMode: doubao` | 清晰 L1 输入 + 非零 tokens | ⚠️ **不计入 §2.2 #6** |
 | 确定性交付 | `plan.md` / `diff.patch` / `verification.json` / `pr-draft.md` | Planning / Coding / Verification / PR 事实源 | ✅ 不写入 `ai-calls.jsonl` |
 
@@ -24,10 +25,11 @@
 
 | 模型名称 | 用途 | 费用承担 | 是否豆包 | 状态 |
 |----------|------|----------|----------|------|
-| `mimo-v2.5` | clarify 模糊需求追问（§2.2 #6 / #4；单轮） | 个人 API 账户 | 否 | 已用（`run-2026-05-21T05-58-01-181Z`） |
-| `mimo-v2.5` | **U2 多轮 clarify**（`proposeClarifications` + `refineWithAnswers`；prompt v2.0.0-llm；`decision=clarify\|finalize`） | 个人 API 账户 | 否 | 已用（`run-l3-multi-turn-clarify`，2 行 ai-calls） |
-| `mimo-v2.5` | **U3 plan 阶段**（`planWithLlm`；`PLAN_MODE=llm`；输出 `target_files + impacted_modules + risks + reasoning`；target_files 不存在时 fail-fast） | 个人 API 账户 | 否 | 已用（`run-plan-llm-driven`，stage=plan 1042/1590 tokens） |
-| `rules-first-p0` | 代码级 P0 胶水链路 | 无 API 费用 | 否 | 已用 |
+| `deepseek-v4-flash` | **当前默认主路径**：clarify + plan 阶段真实模型调用（OpenAI 兼容接口 `https://api.deepseek.com`；可经 `LLM_*` 替换为豆包 EP 或其他兼容服务） | 个人 API 账户 | 否 | 已用（默认 `AI_MODE=llm PLAN_MODE=llm`，clarify + plan 非零 tokens） |
+| `mimo-v2.5` | 历史验收 run：clarify 模糊需求追问（§2.2 #6 / #4；单轮） | 个人 API 账户 | 否 | 历史证据（`run-2026-05-21T05-58-01-181Z`） |
+| `mimo-v2.5` | 历史验收 run：**U2 多轮 clarify**（`proposeClarifications` + `refineWithAnswers`；prompt v2.0.0-llm；`decision=clarify\|finalize`） | 个人 API 账户 | 否 | 历史证据（`run-l3-multi-turn-clarify`，2 行 ai-calls） |
+| `mimo-v2.5` | 历史验收 run：**U3 plan 阶段**（`planWithLlm`；`PLAN_MODE=llm`；输出 `target_files + impacted_modules + risks + reasoning`；target_files 不存在时 fail-fast） | 个人 API 账户 | 否 | 历史证据（`run-plan-llm-driven`，stage=plan 1042/1590 tokens） |
+| `rules-first-p0` | 断网应急兜底链路（非 LLM，tokens 为 0） | 无 API 费用 | 否 | 已用 |
 
 ## Prompt / Skill / Agent 留痕索引
 
@@ -35,7 +37,7 @@
 |------|------|------|
 | Prompt 版本 | `services/agents/src/clarifyWithLlm.js`、`services/agents/src/planWithLlm.js` | `CLARIFY_PROMPT_VERSION=2.0.0-llm`；plan prompt 版本写入 plan ai-call |
 | Prompt 变更记录 | [`prompt-changelog.md`](./prompt-changelog.md) | 记录澄清、plan、Skill prompt / 策略迭代口径 |
-| Skill 定义 | `services/skills/src/*.js`、`services/skills/src/registry.js` | 6 个 Skill、schema-driven Skill、非列表 Skill 与注册元数据 |
+| Skill 定义 | `services/skills/src/*.js`、`services/skills/src/registry.js` | 9 个 Skill、schema-driven Skill、非列表 Skill；`registry.js` 目录自动发现，新增 Skill 无需改注册表 |
 | Agent 实现 | `services/agents/src/requirementAgent.js`、`planningAgent.js`、`codingAgent.js`、`verificationAgent.js`、`prAgent.js` | Requirement / Plan / Edit / Verify / PR 分层职责 |
 | Agent 调用日志 | `docs/reports/runs/<run-id>/ai-calls.jsonl` | 每次 AI/rules 调用记录 stage、model、prompt_version、tokens、latency、cost、status |
 | run 过程证据 | `docs/reports/runs/<run-id>/requirement.md`、`plan.md`、`diff.patch`、`verification.json`、`pr-draft.md` | 证明每个阶段的输入、输出、验证与 PR 草稿 |
@@ -49,7 +51,7 @@
 | 多轮澄清 | `run-l3-multi-turn-clarify/ai-calls.jsonl`、`clarification-history.jsonl` | `clarify` + `clarify-refine` 两轮，第二轮 prompt 含 PM 答复 |
 | plan 阶段 LLM | `run-plan-llm-driven/ai-calls.jsonl`、`plan.md` | `stage=plan`，plan 标注 `source=llm-driven` |
 | schema-driven 跨栈 | `run-l2-auto-cover-image/plan.md`、`diff.patch` | `target_files_source=schema-driven`，diff 覆盖 backend + frontend |
-| 语义召回 | `run-semantic-recall-demo/history-recall.json`、`plan.md` | `match_type=semantic` / `both`，写入 `history_references` |
+| 历史方案复用（token 重叠召回） | `run-semantic-recall-demo/history-recall.json`、`plan.md` | `match_type=semantic` / `both`，写入 `history_references` |
 
 ## 豆包决策（团队共识，2026-05-21）
 

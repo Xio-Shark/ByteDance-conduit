@@ -19,7 +19,7 @@ BLOCK_ON_CONFIRM=1 AI_MODE=llm PLAN_MODE=llm npm run dev
 | 多轮 LLM clarify | `run-l3-multi-turn-clarify` |
 | plan 阶段 LLM | `run-plan-llm-driven` |
 | U1 跨栈自动驱动 | `run-l2-auto-cover-image` |
-| U4 语义召回 | `run-semantic-recall-demo` |
+| U4 历史方案复用 | `run-semantic-recall-demo` |
 | U5 非列表 Skill | `run-l2-comment-like` |
 | 人工确认 | `BLOCK_ON_CONFIRM=1` 后进入 waiting 阶段，再 Record review + Continue |
 | 断点重放 | Web「Resume from edit (plan kept)」 |

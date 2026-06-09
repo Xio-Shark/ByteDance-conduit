@@ -1,0 +1,20 @@
+{
+  "runId": "run-2026-05-20T18-24-42-260Z",
+  "stage": "failed",
+  "status": "failed",
+  "error": "sandbox-repo origin is not Conduit",
+  "repoPath": "/Users/xioshark/Desktop/bytedance/bytedance-implementation/apps/api/sandbox-repo",
+  "evidenceDir": "/Users/xioshark/Desktop/bytedance/bytedance-implementation/apps/api/docs/reports/runs/run-2026-05-20T18-24-42-260Z",
+  "events": [
+    {
+      "at": "2026-05-20T18:24:42.261Z",
+      "stage": "clarifying",
+      "message": "Build requirement card"
+    },
+    {
+      "at": "2026-05-20T18:24:42.263Z",
+      "stage": "failed",
+      "message": "sandbox-repo origin is not Conduit"
+    }
+  ]
+}

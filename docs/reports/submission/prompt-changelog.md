@@ -10,10 +10,10 @@
 
 ## 迭代策略摘要
 
-1. **clarify 双路径**：`AI_MODE=rules` 用规则工厂（`rules-first-p0`）；`AI_MODE=llm` 用 `clarifyWithLlm` + 远端模型（验收 run 使用 `mimo-v2.5`）。
-2. **plan 双路径**：`PLAN_MODE=rules` 走确定性 Planning Agent；`PLAN_MODE=llm` 走 `planWithLlm` 并写入 `ai-calls.jsonl`（U3）。
+1. **clarify 双路径（默认 `llm`）**：`AI_MODE=llm` 用 `clarifyWithLlm` + 远端模型为答辩主路径（当前默认 `deepseek-v4-flash`，历史验收 run 使用 `mimo-v2.5`）；`AI_MODE=rules` 用规则工厂（`rules-first-p0`）仅作断网应急兜底。
+2. **plan 双路径（默认 `llm`）**：`PLAN_MODE=llm` 走 `planWithLlm` 并写入 `ai-calls.jsonl` 非零 tokens（U3，答辩主路径）；`PLAN_MODE=rules` 走确定性 Planning Agent 作兜底。
 3. **rules 模式 fail-fast**：只支持已注册演示模式；未知需求不再默认套用阅读量主线，须走 LLM 澄清或新增 Skill。
-4. **新增需求模式优先新增 Skill 文件**，注册到 `services/skills/src/registry.js`，并在 Skill 元数据声明 `planSummary`，不改 Orchestrator / Agent 主干（§2.2 #1）。
+4. **新增需求模式只需新增 1 个 Skill 文件**：`registry.js` 目录自动发现，放进 `services/skills/src/` 即注册，并在 Skill 元数据声明 `planSummary`，不改 registry / Orchestrator / Agent 主干（§2.2 #1）。
 5. **模糊输入**须产出 `clarifications[]` 开放问题；U2 后支持 PM 答复历史进入第二轮 refine；清晰 L1 原句的 legacy 探索 run **不计入** §2.2 #6 验收口径。
 
 ---
@@ -69,7 +69,7 @@
 | 时间 | 2026-05-20 17:26–17:37 UTC |
 | 变更意图 | 早期 LLM 网关连通性探索；输入为**清晰 L1 原句**（非模糊验收口径） |
 | 证据 | `run-2026-05-20T17-37-55-856Z`、`run-2026-05-20T17-26-03-046Z` |
-| 状态 | **legacy**；当前产品路径已切换为 `AI_MODE=llm` + `mimo-v2.5` |
+| 状态 | **legacy**；当前产品路径已切换为 `AI_MODE=llm`（默认模型 `deepseek-v4-flash`；历史验收 run 使用 `mimo-v2.5`） |
 
 ---
 
@@ -78,7 +78,7 @@
 | Skill ID | 版本 | 等级 | 引入 / 证据 run | 变更意图 | 匹配关键词 | 目标路径 | 改主干？ |
 |----------|------|------|-----------------|----------|------------|----------|----------|
 | `article-list-display-field` | 1.0.0 | L1 | 2026-05-20；`run-2026-05-21T02-16-15-215Z` | P0 主线：文章列表卡片增加阅读量（前端假数据） | 文章列表、阅读量、展示字段 | `ArticlesPreview.jsx`、`styles.css` | 否（首个 Skill） |
-| `article-draft-indicator` | 1.0.0 | L2 | 2026-05-21 05:52；`run-2026-05-21T05-52-12-490Z` | §2.2 #3 跨栈：列表与 API 一致展示草稿 | 草稿、draft | frontend + `Article.js` + `articles.js` | 否（仅新增 Skill + registry 注册） |
+| `article-draft-indicator` | 1.0.0 | L2 | 2026-05-21 05:52；`run-2026-05-21T05-52-12-490Z` | §2.2 #3 跨栈：列表与 API 一致展示草稿 | 草稿、draft | frontend + `Article.js` + `articles.js` | 否（仅新增 Skill 文件，目录自动发现） |
 | `article-detail-word-count` | 1.0.0 | L1 | 2026-05-21 05:52；`run-2026-05-21T05-52-18-277Z` | §2.2 #1 第三模式：详情页字数统计 | 字数、word count、详情页 | `Article.jsx`、`styles.css` | **否**（仅新增 1 个 Skill 文件） |
 | `popular-tags-top-five` | 1.0.0 | L1 | 2026-05-21 06:24；`run-2026-05-21T06-24-47-248Z` | §2.2 #1 第四模式：Popular Tags 前 5 打标 | popular tags、热门标签 | `Home.jsx` / tag list 相关路径 | **否** |
 | `article-cover-image` | 1.0.0 | L2 / U1 | 2026-05-22；`run-l2-auto-cover-image` | schema-driven 跨栈自动驱动：Skill 只声明 `schemaChange`，目标文件由 codegen 推断 | 封面图、cover image | backend model/controller + frontend preview + 新生成 TS/service/mock | **否**（Skill ≤30 行） |
@@ -107,7 +107,7 @@
 | 2026-05-21 05:58 | **§2.2 验收 run** | `1.0.0-llm` + `mimo-v2.5` | `run-2026-05-21T05-58-01-181Z` |
 | 2026-05-21 15:55 | rules fail-fast 收紧 | `rules-first-p0` | 未知需求不再静默落到阅读量；恢复路径必须读取已落盘 `ai-calls.jsonl` |
 | 2026-05-22 | U2 多轮 clarify + U1 schema-driven | `2.0.0-llm`、`article-cover-image` | 拆分 `proposeClarifications`/`refineWithAnswers`；新增 `answer-clarification` API + `clarification-history.jsonl` + `CLARIFYING_AWAITING_ANSWER` 状态；schemaDriver 自动驱动 `articleCoverImage` 跨栈 6 文件（`run-l2-auto-cover-image`） |
-| 2026-05-22 | U3 plan LLM + U4 semantic recall + U5 comment Skill | `plan-llm-system` v1.0.0、`comment-like-count` | `run-plan-llm-driven` 出现 `stage=plan` 非零 tokens；`run-semantic-recall-demo` 含 `match_type=semantic`；`run-l2-comment-like` 跨评论域 |
+| 2026-05-22 | U3 plan LLM + U4 历史方案复用（token 重叠召回）+ U5 comment Skill | `plan-llm-system` v1.0.0、`comment-like-count` | `run-plan-llm-driven` 出现 `stage=plan` 非零 tokens；`run-semantic-recall-demo` 含 `match_type=semantic`；`run-l2-comment-like` 跨评论域 |
 
 ---
 
@@ -126,7 +126,7 @@
 | `run-l2-auto-cover-image` | rules + schema-driven | `rules-first-p0` | `article-cover-image` | **passed**；U1 跨栈自动驱动 |
 | `run-l3-multi-turn-clarify` | llm | `2.0.0-llm` + `mimo-v2.5` | — | **passed**；U2 多轮 clarify/refine，history 4 行 |
 | `run-plan-llm-driven` | rules + plan llm | `plan-llm-system` + `mimo-v2.5` | `article-list-display-field` | **passed**；U3 `stage=plan` 非零 tokens |
-| `run-semantic-recall-demo` | rules + semantic recall | `rules-first-p0` | `article-detail-word-count` | **passed**；U4 `match_type=semantic` |
+| `run-semantic-recall-demo` | rules + 历史方案复用 | `rules-first-p0` | `article-detail-word-count` | **passed**；U4 `match_type=semantic`（token/bigram 重叠召回） |
 | `run-l2-comment-like` | rules | `rules-first-p0` | `comment-like-count` | **passed**；U5 非列表 Skill |
 
 ---

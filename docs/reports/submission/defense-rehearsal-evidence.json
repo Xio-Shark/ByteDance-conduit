@@ -78,8 +78,8 @@
     {
       "id": "q5",
       "topic": "u4-semantic-recall",
-      "question": "Why is history recall more than keyword matching?",
-      "answerSummary": "The local embedding index uses character bigrams and cosine similarity, then merges semantic and token matches. The semantic recall run records history references in the generated plan.",
+      "question": "How does history recall work, and what are its limits?",
+      "answerSummary": "The local index uses character-bigram hash vectors with cosine similarity, merged with skill_id token overlap. This is literal token/bigram overlap, not a semantic embedding model, so synonym-only rephrasings can miss; we frame it honestly as history-plan reuse, not semantic recall. The demo run records history references in the generated plan.",
       "status": "answered",
       "evidenceRefs": [
         "services/index/src/embeddingIndex.js",

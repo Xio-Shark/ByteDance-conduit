@@ -96,15 +96,15 @@ test("pre-submission check summarizes verify failure as a blocker", async () => 
   }
 });
 
-test("pre-submission check rejects placeholder team-info URLs before verify", async () => {
+test("pre-submission check rejects placeholder submission material URLs before verify", async () => {
   const projectRoot = await makeProjectRoot("pre-submission-placeholder-url-");
   const clonePath = path.join(projectRoot, "fresh-clone");
   try {
     await mkdir(clonePath);
     await writeText(
       projectRoot,
-      "docs/reports/submission/team-info.md",
-      "| item | value |\n| team | Alice |\n| demo | https://example.com/demo |\n",
+      "docs/reports/submission/public-repo-guide.md",
+      "| 远端公开 URL | https://example.com/demo |\n",
     );
 
     const result = await runPreSubmission(projectRoot, {
@@ -115,7 +115,7 @@ test("pre-submission check rejects placeholder team-info URLs before verify", as
 
     assert.equal(result.code, 1);
     assert.match(result.stdout, /submission materials still contain human-pending placeholders/);
-    assert.match(result.stdout, /team-info\.md/);
+    assert.match(result.stdout, /public-repo-guide\.md/);
     assert.doesNotMatch(result.stdout, /verify fixture passed/);
     assert.equal(summary.mode, "pre-submission-check");
     assert.equal(summary.status, "failed");
@@ -124,7 +124,7 @@ test("pre-submission check rejects placeholder team-info URLs before verify", as
     });
     assert.equal(summary.checks[0].category, "submission-materials");
     assert.deepEqual(summary.checks[0].evidence, [
-      "docs/reports/submission/team-info.md:3:| demo | https://example.com/demo |",
+      "docs/reports/submission/public-repo-guide.md:1:| 远端公开 URL | https://example.com/demo |",
     ]);
     assert.match(JSON.stringify(summary.checks), /submission materials still contain human-pending placeholders/);
   } finally {

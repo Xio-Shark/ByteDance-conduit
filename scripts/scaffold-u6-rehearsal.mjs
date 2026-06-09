@@ -96,7 +96,7 @@ function buildManifest() {
     minPassed: 2,
     maxMinutes: 15,
     maxSkillLines: 120,
-    note: "Generated scaffold only. Do not mark U6 complete until recordings, run evidence, Skill files, registry entries, implementation change lists, and timestamps are real.",
+    note: "Generated scaffold only. Do not mark U6 complete until recordings, run evidence, auto-discovered Skill files (no registry edits), implementation change lists, and timestamps are real.",
     rehearsals: TASKS.map((task) => ({
       ...task,
       startedAt: "REPLACE_WITH_START_ISO",

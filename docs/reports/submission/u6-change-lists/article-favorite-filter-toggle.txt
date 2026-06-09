@@ -1,5 +1,4 @@
 services/skills/src/articleFavoriteFilterToggle.js
-services/skills/src/registry.js
 sandbox-repo/frontend/src/components/ArticlesPreview/ArticlesPreview.jsx
 sandbox-repo/frontend/src/styles.css
 docs/reports/runs/run-u6-article-favorite-filter-toggle/requirement.md

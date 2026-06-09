@@ -1,0 +1,20 @@
+{
+  "stage": "clarifying_awaiting_answer",
+  "status": "paused",
+  "retryOf": null,
+  "confirmations": [],
+  "events": [
+    {
+      "at": "2026-06-09T14:34:05.707Z",
+      "stage": "clarifying",
+      "message": "Build requirement card"
+    },
+    {
+      "at": "2026-06-09T14:35:04.537Z",
+      "stage": "clarifying_awaiting_answer",
+      "message": "Waiting for human confirmation"
+    }
+  ],
+  "checkpoints": {},
+  "prSubmission": null
+}
