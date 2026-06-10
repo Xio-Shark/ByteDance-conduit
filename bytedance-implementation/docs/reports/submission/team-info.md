@@ -12,10 +12,8 @@
 | 课题名称 | 实现一个可以端到端交付全栈项目的「超级个体」 |
 | 版本 | v1.0.0 |
 | 团队名称 | 关注塔菲喵 |
-| 成员名单 | 滕彦翕（【学校】，【专业】）；李泽士（【学校】，【专业】）；王伯瀚（【学校】，【专业】） |
+| 成员名单 | 滕彦翕（西北工业大学，计算机）；李泽士（西北工业大学，计算机）；王伯瀚（西北工业大学，计算机） |
 | 导师 / 联系方式 | 未提供 |
-
-**注**：成员学校/专业信息请在提交前补齐（将【学校】【专业】替换为真实信息）。
 
 ---
 
@@ -25,11 +23,9 @@
 
 | 成员 | 实际职责 | 对应仓库 / 证据 |
 |------|----------|-----------------|
-| 滕彦翕 | **【待补充具体分工】**例：Orchestrator + Agent 编排、Skill 抽象设计、submission 材料整理 | `services/orchestrator/`、`services/agents/`、`docs/reports/submission/` |
-| 李泽士 | **【待补充具体分工】**例：前端 Console 开发、AI Usage 面板、跨 run 汇总 | `apps/web/`、`AiUsagePanel.jsx`、`CrossRunAiUsagePanel.jsx` |
-| 王伯瀚 | **【待补充具体分工】**例：后端 API 路由、sandbox 封装、验证与测试 | `apps/api/`、`services/sandbox/`、测试文件 |
-
-**注**：上述分工为示例，请根据真实情况修改。可参考模块边界：Orchestrator / Agent / Skill / Web / API / 测试 / submission。
+| 滕彦翕 | 主要开发：系统架构设计、Orchestrator + Agent 编排、Skill 抽象与实现、前后端开发、submission 材料整理 | `services/orchestrator/`、`services/agents/`、`services/skills/`、`apps/`、`docs/reports/submission/` |
+| 王伯瀚 | 测试人员、辅助开发：测试用例编写、验证流程实现、sandbox 封装、部署配置 | `services/sandbox/`、测试文件、`scripts/`、部署配置 |
+| 李泽士 | 测试人员、辅助开发：前端组件测试、API 路由测试、证据验证、文档校对 | `apps/web/src/*.test.js`、`apps/api/src/*.test.js`、文档校对 |
 
 ---
 
