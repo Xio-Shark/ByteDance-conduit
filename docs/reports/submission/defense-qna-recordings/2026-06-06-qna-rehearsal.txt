@@ -1,0 +1,10 @@
+Local Q&A rehearsal record
+
+Recorded medium: text transcript and reviewer notes, not public demo video.
+Started: 2026-06-06T13:20:00Z
+Ended: 2026-06-06T13:38:00Z
+
+The detailed transcript is stored at:
+docs/reports/submission/defense-qna-notes/2026-06-06-qna-rehearsal.md
+
+This file exists as the local recording artifact required by the defense rehearsal gate. It does not claim that the 3-8 minute public demonstration video has been recorded.

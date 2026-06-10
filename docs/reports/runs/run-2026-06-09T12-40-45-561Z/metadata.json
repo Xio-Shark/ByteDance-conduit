@@ -1,0 +1,69 @@
+{
+  "stage": "ready_for_pr",
+  "status": "passed",
+  "retryOf": null,
+  "confirmations": [],
+  "events": [
+    {
+      "at": "2026-06-09T12:40:45.562Z",
+      "stage": "clarifying",
+      "message": "Build requirement card"
+    },
+    {
+      "at": "2026-06-09T12:40:45.609Z",
+      "stage": "planning",
+      "message": "Locate Skill and target files"
+    },
+    {
+      "at": "2026-06-09T12:40:45.619Z",
+      "stage": "editing",
+      "message": "Apply patch to Conduit sandbox"
+    },
+    {
+      "at": "2026-06-09T12:40:45.652Z",
+      "stage": "verifying",
+      "message": "Run Conduit verification"
+    },
+    {
+      "at": "2026-06-09T12:40:47.215Z",
+      "stage": "pr_drafting",
+      "message": "Generate PR draft"
+    }
+  ],
+  "checkpoints": {
+    "clarifying": {
+      "at": "2026-06-09T12:40:45.609Z",
+      "artifacts": [
+        "requirement.md",
+        "history-recall.json",
+        "ai-calls.jsonl"
+      ]
+    },
+    "planning": {
+      "at": "2026-06-09T12:40:45.619Z",
+      "artifacts": [
+        "plan.md"
+      ]
+    },
+    "editing": {
+      "at": "2026-06-09T12:40:45.652Z",
+      "artifacts": [
+        "diff.patch"
+      ]
+    },
+    "verifying": {
+      "at": "2026-06-09T12:40:47.215Z",
+      "artifacts": [
+        "verification.json"
+      ]
+    },
+    "pr_drafting": {
+      "at": "2026-06-09T12:40:47.215Z",
+      "artifacts": [
+        "pr-draft.md",
+        "ai-calls.jsonl"
+      ]
+    }
+  },
+  "prSubmission": null
+}

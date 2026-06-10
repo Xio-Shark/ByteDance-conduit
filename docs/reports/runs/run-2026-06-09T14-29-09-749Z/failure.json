@@ -1,0 +1,23 @@
+{
+  "runId": "run-2026-06-09T14-29-09-749Z",
+  "stage": "failed",
+  "status": "failed",
+  "error": "LLM_API_KEY is required when AI_MODE=llm",
+  "repoPath": "/Users/xioshark/Desktop/bytedance/bytedance-implementation/sandbox-repo",
+  "evidenceDir": "/Users/xioshark/Desktop/bytedance/bytedance-implementation/docs/reports/runs/run-2026-06-09T14-29-09-749Z",
+  "events": [
+    {
+      "at": "2026-06-09T14:29:09.750Z",
+      "stage": "clarifying",
+      "message": "Build requirement card"
+    },
+    {
+      "at": "2026-06-09T14:29:09.777Z",
+      "stage": "failed",
+      "message": "LLM_API_KEY is required when AI_MODE=llm"
+    }
+  ],
+  "checkpoints": {},
+  "aiCalls": null,
+  "aiUsage": null
+}

@@ -1,0 +1,1 @@
+{"run_id":"run-2026-06-09T12-40-45-561Z","stage":"clarify","model":"rules-first-p0","prompt_version":"rules-first-p0","skill_id":"article-cover-image","input_summary":"为文章模型新增封面图字段，新建/编辑表单支持输入 URL，列表和详情页展示。","output_summary":"为 Article 模型新增 coverImage 字段并自动同步前端类型/服务/Mock","tokens_in":0,"tokens_out":0,"latency_ms":0,"cost_estimate":0,"status":"reviewed"}

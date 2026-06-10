@@ -1,0 +1,10 @@
+{
+  "clarifying": {
+    "at": "2026-05-22T14:14:34.266Z",
+    "artifacts": [
+      "requirement.md",
+      "history-recall.json",
+      "ai-calls.jsonl"
+    ]
+  }
+}
