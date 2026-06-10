@@ -65,6 +65,19 @@
 
 ---
 
+## 性能指标与证据规模（选填加分项）
+
+| 指标类型 | 数量 / 内容 | 说明 |
+|---------|-----------|------|
+| AI 调用记录 | 244 次 | 每次记录 tokens_in/tokens_out/latency_ms/cost_estimate/status，覆盖 clarify + plan 阶段真实 LLM 调用 |
+| 历史召回 | 227 次 | 每次记录 similarity_score/match_type，证明 token 重叠召回机制 |
+| 验证结果 | 56 次 | 每次记录 ESLint + Stylelint + Vitest 真实执行结果（exit code + duration） |
+| Prompt 版本迭代 | 6 个版本 | 从 `rules-first-p0` 到 `2.0.0-llm`，记录在 `prompt-changelog.md` |
+| Skill 代码量证明 | U1 ≤30 行<br>U5 ≤50 行 | schema-driven Skill（`articleCoverImage.js`）≤30 行；评论点赞 Skill（`commentLikeCount.js`）≤50 行 |
+| 最终验收 run | clarify: 423/589 tokens (6.8s)<br>plan: 1083/1366 tokens (20.3s) | `run-2026-06-10T07-45-17-125Z`，DeepSeek 真实调用，提交截止日最终证据 |
+
+---
+
 ## 关联材料
 
 - [`checklist.md`](./checklist.md)
