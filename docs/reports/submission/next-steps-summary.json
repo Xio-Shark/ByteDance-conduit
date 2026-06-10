@@ -1,0 +1,264 @@
+{
+  "status": "failed",
+  "blockerCount": 3,
+  "filteredBlockerCount": 3,
+  "hiddenBlockerCount": 0,
+  "canMarkSubmissionComplete": false,
+  "viewSafety": {
+    "filtersActive": false,
+    "hiddenBlockerCount": 0,
+    "emptyBecauseOfFilters": false,
+    "viewStartsAfterFullGate": false,
+    "skippedClosureStepCount": 0,
+    "fullGateStatus": "failed",
+    "exitCodeReflectsFullGate": true,
+    "filtersChangeCompletion": false,
+    "note": "Only an unblocked full submission gate can mark the project complete; filtered views and focused validation do not change completion status."
+  },
+  "closureProgress": {
+    "fullGateFirstOpenStep": {
+      "id": "local-evidence",
+      "order": 1,
+      "label": "Fill local evidence JSONs",
+      "rationale": "Close rehearsal, video, and defense evidence before publishing or final submission checks."
+    },
+    "viewFirstOpenStep": {
+      "id": "local-evidence",
+      "order": 1,
+      "label": "Fill local evidence JSONs",
+      "rationale": "Close rehearsal, video, and defense evidence before publishing or final submission checks."
+    },
+    "currentViewStep": {
+      "id": "local-evidence",
+      "order": 1,
+      "label": "Fill local evidence JSONs",
+      "rationale": "Close rehearsal, video, and defense evidence before publishing or final submission checks."
+    },
+    "viewStartsAfterFullGate": false,
+    "skippedClosureStepCount": 0
+  },
+  "closureProgressSummary": {
+    "fullOpenCount": 3,
+    "viewOpenCount": 3,
+    "fullFirstOpenStep": {
+      "id": "local-evidence",
+      "order": 1,
+      "label": "Fill local evidence JSONs",
+      "rationale": "Close rehearsal, video, and defense evidence before publishing or final submission checks."
+    },
+    "viewFirstOpenStep": {
+      "id": "local-evidence",
+      "order": 1,
+      "label": "Fill local evidence JSONs",
+      "rationale": "Close rehearsal, video, and defense evidence before publishing or final submission checks."
+    },
+    "openSteps": [
+      {
+        "id": "local-evidence",
+        "order": 1,
+        "label": "Fill local evidence JSONs",
+        "fullOpenBlockers": [
+          "video"
+        ],
+        "viewOpenBlockers": [
+          "video"
+        ],
+        "firstFullOpen": true,
+        "firstViewOpen": true
+      },
+      {
+        "id": "external-submission",
+        "order": 3,
+        "label": "Fill external submission evidence",
+        "fullOpenBlockers": [
+          "external"
+        ],
+        "viewOpenBlockers": [
+          "external"
+        ]
+      },
+      {
+        "id": "pre-submission",
+        "order": 4,
+        "label": "Run the release-day pre-submission gate",
+        "fullOpenBlockers": [
+          "pre-submission"
+        ],
+        "viewOpenBlockers": [
+          "pre-submission"
+        ]
+      }
+    ]
+  },
+  "actionSummary": {
+    "status": "failed",
+    "blockerCount": 3,
+    "fullBlockerCount": 3,
+    "hiddenBlockerCount": 0,
+    "blockerIds": [
+      "video",
+      "external",
+      "pre-submission"
+    ],
+    "evidenceFileCount": 2,
+    "manualInputCount": 0,
+    "validationCommandCount": 3,
+    "blockersWithScaffold": [
+      "video",
+      "external"
+    ],
+    "blockersRequiringFreshClonePath": [],
+    "blockersWithoutPrepareAction": [
+      "pre-submission"
+    ],
+    "blockersWithoutValidationCommand": [],
+    "requiresManualEvidence": true,
+    "canValidateLocally": true,
+    "commandsCreateEvidenceByDefault": false,
+    "validationRunsByDefault": false
+  },
+  "nextClosureActionSummary": {
+    "status": "failed",
+    "blockerCount": 1,
+    "fullBlockerCount": 3,
+    "hiddenBlockerCount": 2,
+    "blockerIds": [
+      "video"
+    ],
+    "evidenceFileCount": 1,
+    "manualInputCount": 0,
+    "validationCommandCount": 1,
+    "blockersWithScaffold": [
+      "video"
+    ],
+    "blockersRequiringFreshClonePath": [],
+    "blockersWithoutPrepareAction": [],
+    "blockersWithoutValidationCommand": [],
+    "requiresManualEvidence": true,
+    "canValidateLocally": true,
+    "commandsCreateEvidenceByDefault": false,
+    "validationRunsByDefault": false
+  },
+  "actionWarnings": [
+    {
+      "type": "missing-prepare-action",
+      "scope": "current-view",
+      "blockerIds": [
+        "pre-submission"
+      ],
+      "detail": "These blockers have validation guidance but no evidence file or manual input preparation step in this view."
+    }
+  ],
+  "nextClosureStep": {
+    "id": "local-evidence",
+    "order": 1,
+    "label": "Fill local evidence JSONs",
+    "rationale": "Close rehearsal, video, and defense evidence before publishing or final submission checks."
+  },
+  "fullGateSuggestedNextCommand": "npm run submission:next-steps -- --next --public-repo /tmp/conduit-super-individual-fresh-resanitized.d3f3dde",
+  "suggestedNextCommand": "npm run submission:next-steps -- --next --public-repo /tmp/conduit-super-individual-fresh-resanitized.d3f3dde",
+  "currentViewNextCommand": "npm run submission:next-steps -- --next --public-repo /tmp/conduit-super-individual-fresh-resanitized.d3f3dde",
+  "nextClosureCommandsWriteCommand": "npm run submission:next-steps -- --next --public-repo /tmp/conduit-super-individual-fresh-resanitized.d3f3dde --commands --write docs/reports/submission/next-steps.sh",
+  "currentViewCommandsWriteCommand": "npm run submission:next-steps -- --public-repo /tmp/conduit-super-individual-fresh-resanitized.d3f3dde --commands --write docs/reports/submission/next-steps.sh",
+  "nextClosureSummaryWriteCommand": "npm run submission:next-steps -- --next --public-repo /tmp/conduit-super-individual-fresh-resanitized.d3f3dde --summary --write docs/reports/submission/next-steps-summary.json",
+  "currentViewSummaryWriteCommand": "npm run submission:next-steps -- --public-repo /tmp/conduit-super-individual-fresh-resanitized.d3f3dde --summary --write docs/reports/submission/next-steps-summary.json",
+  "safety": {
+    "createsEvidenceByDefault": false,
+    "validatesByDefault": false,
+    "defaultBlockedExitCode": 1,
+    "placeholderOptInEnv": "SUBMISSION_NEXT_STEPS_PREPARE_PLACEHOLDERS=1",
+    "validationOptInEnv": "SUBMISSION_NEXT_STEPS_RUN_VALIDATION=1",
+    "note": "Generated commands print TODOs by default; they do not create final evidence or run validation unless explicitly opted in."
+  },
+  "scriptWriteRecommendation": {
+    "preferWriteFlag": true,
+    "commandsWriteFlag": "--commands --write docs/reports/submission/next-steps.sh",
+    "commandsWriteScript": "npm run submission:next-steps:commands:write",
+    "nextCommandsWriteScript": "npm run submission:next-steps:next:commands:write",
+    "avoidShellRedirection": true,
+    "reason": "Use --write or the package shortcuts for commands output so npm banners are not redirected into executable bash scripts."
+  },
+  "summaryWriteRecommendation": {
+    "preferWriteFlag": true,
+    "summaryWriteFlag": "--summary --write docs/reports/submission/next-steps-summary.json",
+    "summaryWriteScript": "npm run submission:next-steps:summary:write",
+    "nextSummaryWriteScript": "npm run submission:next-steps:next:summary:write",
+    "avoidShellRedirection": true,
+    "reason": "Use --summary --write or the package shortcuts for summary output so npm banners are not redirected into JSON files."
+  },
+  "blockers": [
+    {
+      "id": "video",
+      "label": "local S7 video evidence",
+      "planItems": [
+        "S7",
+        "B33"
+      ],
+      "detail": "evidence-file: missing docs/reports/submission/video-evidence.json",
+      "scaffoldCommand": "npm run scaffold:submission-evidence -- --kind video-evidence --commands",
+      "copyFinalCommand": "npm run scaffold:submission-evidence -- --kind video-evidence --copy-final",
+      "copySafety": {
+        "optInRequired": true,
+        "optInEnv": "SUBMISSION_NEXT_STEPS_PREPARE_PLACEHOLDERS=1",
+        "createsFinalEvidence": false,
+        "note": "Copies a template placeholder only; fill real evidence before validation."
+      },
+      "validateCommand": "npm run check:video-evidence -- --file docs/reports/submission/video-evidence.json",
+      "validationSafety": {
+        "optInRequired": true,
+        "optInEnv": "SUBMISSION_NEXT_STEPS_RUN_VALIDATION=1",
+        "mayRequireFreshClonePath": false
+      },
+      "writeTo": "docs/reports/submission/video-evidence.json"
+    },
+    {
+      "id": "external",
+      "label": "S6/S8/S9/S10 external submission evidence",
+      "planItems": [
+        "R2",
+        "S6",
+        "S8",
+        "S9",
+        "S10",
+        "B29",
+        "B34",
+        "B35",
+        "B37"
+      ],
+      "detail": "evidence-file: missing docs/reports/submission/external-submission-evidence.json",
+      "scaffoldCommand": "npm run scaffold:submission-evidence -- --kind external-submission --commands",
+      "copyFinalCommand": "npm run scaffold:submission-evidence -- --kind external-submission --copy-final",
+      "copySafety": {
+        "optInRequired": true,
+        "optInEnv": "SUBMISSION_NEXT_STEPS_PREPARE_PLACEHOLDERS=1",
+        "createsFinalEvidence": false,
+        "note": "Copies a template placeholder only; fill real evidence before validation."
+      },
+      "validateCommand": "npm run check:external-submission -- --file docs/reports/submission/external-submission-evidence.json --public-repo /tmp/conduit-super-individual-fresh-resanitized.d3f3dde",
+      "validationSafety": {
+        "optInRequired": true,
+        "optInEnv": "SUBMISSION_NEXT_STEPS_RUN_VALIDATION=1",
+        "mayRequireFreshClonePath": false
+      },
+      "writeTo": "docs/reports/submission/external-submission-evidence.json"
+    },
+    {
+      "id": "pre-submission",
+      "label": "S9 release-day pre-submission gate",
+      "planItems": [
+        "S9",
+        "S10",
+        "B35",
+        "B37"
+      ],
+      "detail": "git-tracking: public release paths are not all tracked by git; git-tracking: critical release paths are not ready for a tracked public repository; submission-materials: final external submission checklist is not complete; video-evidence: local video evidence is missing or incomplete; external-evidence: external submission evidence is missing or incomplete",
+      "validateCommand": "PUBLIC_REPO_CLONE_PATH=/tmp/conduit-super-individual-fresh-resanitized.d3f3dde bash scripts/pre-submission-check.sh",
+      "validationSafety": {
+        "optInRequired": true,
+        "optInEnv": "SUBMISSION_NEXT_STEPS_RUN_VALIDATION=1",
+        "mayRequireFreshClonePath": false
+      }
+    }
+  ],
+  "note": "Only an unblocked full submission gate can mark the project complete; filtered views and focused validation do not change completion status."
+}

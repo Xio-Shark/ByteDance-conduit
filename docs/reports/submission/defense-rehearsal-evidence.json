@@ -1,0 +1,149 @@
+{
+  "rehearsal": {
+    "title": "Conduit super individual S10 local defense Q&A rehearsal",
+    "startedAt": "2026-06-06T13:20:00Z",
+    "endedAt": "2026-06-06T13:38:00Z",
+    "participants": [
+      {
+        "name": "xioshark delivery maintainer",
+        "role": "presenter"
+      },
+      {
+        "name": "Codex local reviewer",
+        "role": "reviewer"
+      }
+    ],
+    "recording": "docs/reports/submission/defense-qna-recordings/2026-06-06-qna-rehearsal.txt",
+    "notes": "docs/reports/submission/defense-qna-notes/2026-06-06-qna-rehearsal.md"
+  },
+  "coverage": [
+    "architecture",
+    "u1-schema-driven",
+    "u2-multi-turn-clarify",
+    "u3-plan-llm",
+    "u4-semantic-recall",
+    "u5-non-list-skill",
+    "u6-live-skill",
+    "submission-boundary"
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "topic": "architecture",
+      "question": "How does the system turn a PM request into a reviewable code change?",
+      "answerSummary": "The delivery run is staged as clarify, plan, edit, verify, PR, and observe. The API and Web layers are orchestration surfaces, while filesystem evidence under docs/reports/runs keeps the completed run auditable.",
+      "status": "answered",
+      "evidenceRefs": [
+        "docs/reports/submission/architecture.md",
+        "docs/reports/runs/run-plan-llm-driven/plan.md"
+      ]
+    },
+    {
+      "id": "q2",
+      "topic": "u1-schema-driven",
+      "question": "What proves that cross-stack changes are not hard-coded for one field?",
+      "answerSummary": "The article cover image skill declares schemaChange and delegates common work to the schema driver and frontend generator. The named run records the generated cross-stack plan, verification, and PR draft.",
+      "status": "answered",
+      "evidenceRefs": [
+        "services/skills/src/articleCoverImage.js",
+        "docs/reports/runs/run-l2-auto-cover-image/plan.md",
+        "docs/reports/runs/run-l2-auto-cover-image/verification.json"
+      ]
+    },
+    {
+      "id": "q3",
+      "topic": "u2-multi-turn-clarify",
+      "question": "How do you prove the system really pauses and resumes clarification rather than using a single scripted prompt?",
+      "answerSummary": "The run-l3-multi-turn-clarify evidence records clarify and clarify-refine calls, and the API/Web clarification route handles pending questions before resuming downstream stages.",
+      "status": "answered",
+      "evidenceRefs": [
+        "docs/reports/runs/run-l3-multi-turn-clarify/ai-calls.jsonl",
+        "apps/api/src/runClarificationRoutes.js",
+        "apps/api/src/runClarificationRoutes.test.js",
+        "apps/web/src/components/ClarificationsPanel.jsx"
+      ]
+    },
+    {
+      "id": "q4",
+      "topic": "u3-plan-llm",
+      "question": "Why is the plan stage considered a real AI stage?",
+      "answerSummary": "PLAN_MODE=llm routes planning through planWithLlm, records a stage=plan AI call with non-zero token metrics, and validates target files instead of silently falling back.",
+      "status": "answered",
+      "evidenceRefs": [
+        "services/agents/src/planWithLlm.js",
+        "docs/reports/runs/run-plan-llm-driven/ai-calls.jsonl",
+        "docs/reports/runs/run-plan-llm-driven/plan.md"
+      ]
+    },
+    {
+      "id": "q5",
+      "topic": "u4-semantic-recall",
+      "question": "How does history recall work, and what are its limits?",
+      "answerSummary": "The local index uses character-bigram hash vectors with cosine similarity, merged with skill_id token overlap. This is literal token/bigram overlap, not a semantic embedding model, so synonym-only rephrasings can miss; we frame it honestly as history-plan reuse, not semantic recall. The demo run records history references in the generated plan.",
+      "status": "answered",
+      "evidenceRefs": [
+        "services/index/src/embeddingIndex.js",
+        "docs/reports/runs/run-semantic-recall-demo/plan.md",
+        "docs/reports/runs/run-semantic-recall-demo/verification.json"
+      ]
+    },
+    {
+      "id": "q6",
+      "topic": "u5-non-list-skill",
+      "question": "How do you show that the abstraction is not limited to the article list?",
+      "answerSummary": "The commentLikeCount skill targets the comment domain and the run-l2-comment-like evidence shows model, controller, route, and UI changes outside the article list path.",
+      "status": "answered",
+      "evidenceRefs": [
+        "services/skills/src/commentLikeCount.js",
+        "docs/reports/runs/run-l2-comment-like/plan.md",
+        "docs/reports/runs/run-l2-comment-like/verification.json"
+      ]
+    },
+    {
+      "id": "q7",
+      "topic": "u6-live-skill",
+      "question": "What can you do if the reviewer asks for a new small skill during defense?",
+      "answerSummary": "The U6 manifest keeps three timed rehearsal cases with named runs, skill files, registry entries, implementation change lists, and local rehearsal records. These prove readiness without pretending to replace the public demo video.",
+      "status": "answered",
+      "evidenceRefs": [
+        "docs/reports/submission/u6-rehearsal-manifest.json",
+        "docs/reports/runs/run-u6-comment-draft-counter/verification.json",
+        "docs/reports/runs/run-u6-profile-account-age/verification.json",
+        "docs/reports/runs/run-u6-article-favorite-filter-toggle/verification.json"
+      ]
+    },
+    {
+      "id": "q8",
+      "topic": "submission-boundary",
+      "question": "What is still outside the local evidence package?",
+      "answerSummary": "Demo URL, public video URL, remote secret scanning state, and external platform confirmation must be recorded after they actually exist. The gate should remain blocked until those facts are available.",
+      "status": "answered",
+      "evidenceRefs": [
+        "docs/reports/submission/public-repo-guide.md",
+        "docs/reports/submission/security-check-report.md",
+        "docs/reports/submission/video-recording-guide.md",
+        "docs/reports/submission/external-submission-evidence.template.json"
+      ]
+    }
+  ],
+  "followUps": [
+    {
+      "questionId": "q4",
+      "prompt": "What if the LLM returns invalid file paths?",
+      "answerSummary": "The LLM plan path validates target files and fails fast. It does not turn impossible paths into a rules-mode success because that would hide a false delivery signal.",
+      "status": "answered"
+    },
+    {
+      "questionId": "q8",
+      "prompt": "Why not mark the project complete now that the public repo exists?",
+      "answerSummary": "Fresh clone content checks only prove repository content. Completion also requires the local demo video evidence, uploaded video URL, Demo URL, external submission confirmation, and release-day pre-submission gate.",
+      "status": "answered"
+    }
+  ],
+  "outcome": {
+    "status": "passed",
+    "openIssues": [],
+    "defensePrepFinalized": true,
+    "defensePrepPath": "docs/reports/submission/defense-prep.md"
+  }
+}
